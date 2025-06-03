@@ -1,11 +1,11 @@
 {
   "name": "client",
   "version": "0.0.1",
+  "homepage": "https://khenson631.github.io/peppercorn-frontend/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "deploy": "gh-pages -d dist"
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^18.2.0",
