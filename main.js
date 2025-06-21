@@ -1,3 +1,5 @@
+const API_BASE_URL = 'https://peppercorn-backend.onrender.com';
+
 document.getElementById('submitEmail').addEventListener('click', async () => {
   const email = document.getElementById('email').value;
   const msgElem = document.getElementById('emailMsg');
@@ -7,7 +9,7 @@ document.getElementById('submitEmail').addEventListener('click', async () => {
     return;
   }
   try {
-    const res = await fetch('/api/waitlist', {
+    const res = await fetch(`${API_BASE_URL}/api/waitlist`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
@@ -28,7 +30,7 @@ document.getElementById('checkStock').addEventListener('click', async () => {
     return;
   }
   try {
-    const res = await fetch(`/api/score/${ticker}`);
+    const res = await fetch(`${API_BASE_URL}/api/score/${ticker}`);
     const data = await res.json();
     if (data.label && data.confidence) {
       resultElem.innerHTML = `<strong>Label:</strong> ${data.label}<br><strong>Confidence:</strong> ${data.confidence}`;
