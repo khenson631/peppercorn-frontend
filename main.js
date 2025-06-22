@@ -138,6 +138,12 @@ document.getElementById('checkStock').addEventListener('click', async () => {
           <div style="font-size: 14px; color: #666;">
             ${data.sentiment} • ${data.trend} • ${data.insider}
           </div>
+          <div style="font-size: 14px; color: #666;">
+            <strong>High Price:</strong> $${data.highPrice?.toFixed(2) || 'N/A'}
+            <strong>Low Price:</strong> $${data.lowPrice?.toFixed(2) || 'N/A'}
+            <strong>Open Price:</strong> $${data.openPrice?.toFixed(2) || 'N/A'}
+            <strong>Volume:</strong> ${data.volume?.toLocaleString() || 'N/A'}
+          </div>
         </div>
       `;
     } else {
