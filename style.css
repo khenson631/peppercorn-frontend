@@ -58,4 +58,34 @@ button:hover {
   border: 1px solid #d1d5db;
   border-radius: 4px;
   background: #f1f5f9;
+}
+
+.suggestions-list {
+  position: absolute;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  width: 90%;
+  max-width: 350px;
+  margin-top: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+  display: none;
+}
+.suggestion-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background 0.15s;
+}
+.suggestion-item:hover, .suggestion-item.active {
+  background: #f0f4fa;
+}
+@media (max-width: 500px) {
+  .suggestions-list {
+    width: 98%;
+    max-width: 98vw;
+  }
 } 
