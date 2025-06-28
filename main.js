@@ -144,7 +144,17 @@ document.getElementById('checkStock').addEventListener('click', async () => {
             <strong>Open Price:</strong> $${data.openPrice?.toFixed(2) || 'N/A'}
             <strong>Volume:</strong> ${data.volume?.toLocaleString() || 'N/A'}
           </div>
-        </div>
+          <h3>Basic Financials</h3>
+          <div style="font-size: 14px; color: #666;">
+            <strong>Revenue:</strong> ${data.basicFinancials.revenue}
+            <strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}
+            <strong>Current Ratio:</strong> ${data.basicFinancials.currentRatio}
+            <strong>Debt to Equity:</strong> ${data.basicFinancials.debtToEquity}
+            <strong>Price to Earnings:</strong> ${data.basicFinancials.priceToEarnings}
+            <strong>Price to Book:</strong> ${data.basicFinancials.priceToBook}
+            <strong>Return on Equity:</strong> ${data.basicFinancials.returnOnEquity}
+            <strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}            
+          </div>
       `;
     } else {
       resultElem.textContent = data.error || 'No result found.';
