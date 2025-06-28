@@ -149,9 +149,11 @@ document.getElementById('checkStock').addEventListener('click', async () => {
             <strong>Revenue:</strong> ${data.basicFinancials.revenue}
             <strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}
             <strong>Current Ratio:</strong> ${data.basicFinancials.currentRatio}
+            <br>
             <strong>Debt to Equity:</strong> ${data.basicFinancials.debtToEquity}
             <strong>Price to Earnings:</strong> ${data.basicFinancials.priceToEarnings}
-            <strong>Price to Book:</strong> ${data.basicFinancials.priceToBook}
+            <strong>Book Value:</strong> ${data.basicFinancials.bookValue}
+            <br>
             <strong>Return on Equity:</strong> ${data.basicFinancials.returnOnEquity}
             <strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}            
           </div>
