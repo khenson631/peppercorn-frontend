@@ -158,6 +158,27 @@ document.getElementById('checkStock').addEventListener('click', async () => {
             <strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}
             <strong>EPS Annual:</strong> ${data.basicFinancials.epsAnnual}
           </div>
+          <h3 style="margin-top:24px;">Latest News</h3>
+          <div id="newsFeed">
+            ${
+              Array.isArray(data.news) && data.news.length
+                ? data.news.map(article => `
+                  <div class="news-article" style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #eee;">
+                    <a href="${article.url}" target="_blank" style="font-weight:bold; color:#1a0dab; text-decoration:none;">
+                      ${article.headline}
+                    </a>
+                    <div style="font-size:12px; color:#888;">
+                      ${article.source} • ${new Date(article.datetime * 1000).toLocaleDateString()}
+                    </div>
+                    <div style="font-size:14px; color:#444; margin-top:4px;">
+                      ${article.summary || ''}
+                    </div>
+                  </div>
+                `).join('')
+                : '<div style="color:#888;">No recent news found.</div>'
+            }
+          </div>
+        </div>
       `;
     } else {
       resultElem.textContent = data.error || 'No result found.';

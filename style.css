@@ -6,7 +6,7 @@ body {
 }
 
 .container {
-  max-width: fit-content;
+  min-width: fit-content;
   margin: 40px auto;
   background: #fff;
   border-radius: 8px;
