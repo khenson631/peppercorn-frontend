@@ -148,14 +148,15 @@ document.getElementById('checkStock').addEventListener('click', async () => {
           <div style="font-size: 14px; color: #666;">
             <strong>Revenue:</strong> ${data.basicFinancials.revenue}
             <strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}
-            <strong>Current Ratio:</strong> ${data.basicFinancials.currentRatio}
+            <strong>Current Ratio:</strong> ${data.basicFinancials.currentRatioAnnual}
             <br>
-            <strong>Debt to Equity:</strong> ${data.basicFinancials.debtToEquity}
+            <strong>Debt to Equity:</strong> ${data.basicFinancials.totalDebtToEquity}
             <strong>Price to Earnings:</strong> ${data.basicFinancials.priceToEarnings}
-            <strong>Book Value Per Share (Annual):</strong> ${data.basicFinancials.bookValuePerShareAnnual}
+            <strong>Dividend Yield:</strong> ${data.basicFinancials.dividendYieldTTM}
             <br>
             <strong>Return on Equity:</strong> ${data.basicFinancials.returnOnEquity}
-            <strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}            
+            <strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}
+            <strong>EPS Annual:</strong> ${data.basicFinancials.epsAnnual}
           </div>
       `;
     } else {
