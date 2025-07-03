@@ -19,9 +19,14 @@
 
     <section>
       <h2>Check a Stock</h2>
-      <input id="ticker" type="text" placeholder="e.g. AAPL" />
+      <div class="search-bar">
+        <svg class="search-icon" width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="9" cy="9" r="7" stroke="#888" stroke-width="2"/>
+          <line x1="14.2" y1="14.2" x2="18" y2="18" stroke="#888" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input id="ticker" type="text" placeholder="Search for stocks" autocomplete="off" />
+      </div>
       <div id="tickerSuggestions" class="suggestions-list"></div>
-      <button id="checkStock">Check</button>
       <div id="stockResult"></div>
     </section>
   </div>
