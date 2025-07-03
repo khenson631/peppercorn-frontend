@@ -106,7 +106,8 @@ document.getElementById('submitEmail').addEventListener('click', async () => {
   }
 });
 
-document.getElementById('checkStock').addEventListener('click', async () => {
+// --- Stock Search Logic ---
+async function performStockSearch() {
   const ticker = document.getElementById('ticker').value;
   const resultElem = document.getElementById('stockResult');
   resultElem.textContent = '';
@@ -186,4 +187,51 @@ document.getElementById('checkStock').addEventListener('click', async () => {
   } catch (err) {
     resultElem.textContent = 'Error fetching stock score.';
   }
-}); 
+}
+
+// --- Trigger search on Enter in input ---
+document.getElementById('ticker').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    performStockSearch();
+  }
+});
+
+// --- Trigger search on clicking the magnifying glass icon ---
+document.querySelector('.search-icon').addEventListener('click', function() {
+  performStockSearch();
+});
+
+// --- Trigger search on clicking a suggestion ---
+// suggestionsList.addEventListener('click', (e) => {
+//   const item = e.target.closest('.suggestion-item');
+//   if (item) {
+//     const idx = parseInt(item.getAttribute('data-idx'), 10);
+//     tickerInput.value = suggestions[idx].symbol;
+//     clearSuggestions();
+//     tickerInput.focus();
+//     performStockSearch();
+//   }
+// }); 
+
+document.addEventListener('DOMContentLoaded', () => {
+  alert(suggestionsList);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  suggestionsList.addEventListener('click', (e) => {
+    alert('clicked');
+
+    const item = e.target.closest('.suggestion-item');
+    if (!item) return; // click outside a suggestion item
+
+    const idx = parseInt(item.getAttribute('data-idx'), 10);
+    const selected = suggestions[idx];
+
+    if (!selected) return; // safeguard against invalid index
+
+    tickerInput.value = selected.symbol;
+    clearSuggestions();
+    tickerInput.focus();
+    performStockSearch();
+  });
+});
