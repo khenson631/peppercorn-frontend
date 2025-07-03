@@ -27,13 +27,27 @@ section {
   align-items: center;
 }
 
-input[type="email"], input[type="text"] {
-  width: 70%;
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+/* input[type="email"], input[type="text"] { */
+input[id="email"] {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: #fff;
+  border-radius: 32px;
+  box-shadow: 0 2px 8px rgba(158, 32, 32, 0.2);
+  padding: 0 20px;
+  height: 48px;
+  min-width: 75%;
+  max-width: 100%;
+  margin: 0 auto 16px auto;
+  border: none;
   font-size: 1rem;
+}
+
+input[id="email"]:focus {
+  outline: none;
+  border: none;
+  box-shadow: 0 2px 12px rgba(60,60,60,0.16);
 }
 
 button {
@@ -147,13 +161,14 @@ button:hover {
 .search-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background: #fff;
   border-radius: 32px;
-  box-shadow: 0 2px 8px rgba(60,60,60,0.08);
+  box-shadow: 0 2px 8px rgba(158, 32, 32, 0.2);
   padding: 0 20px;
   height: 48px;
-  max-width: 520px;
+  min-width: 75%;
+  max-width: 100%;
   margin: 0 auto 16px auto;
   border: none;
 }
