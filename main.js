@@ -123,7 +123,10 @@ async function performStockSearch() {
       const changeSymbol = data.dailyChange >= 0 ? '+' : '';
       
       resultElem.innerHTML = `
-        <div style="margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+          <div style="margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+          <div style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em;">
+            <strong>${data.companyName}</strong> (${data.ticker})
+          </div>
           <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
             <strong>${data.label}</strong> (${data.confidence} confidence)
           </div>
@@ -145,7 +148,7 @@ async function performStockSearch() {
             <strong>Open Price:</strong> $${data.openPrice?.toFixed(2) || 'N/A'}
             <strong>Volume:</strong> ${data.volume?.toLocaleString() || 'N/A'}
           </div>
-          <h3>Basic Financials</h3>
+          <h3 style="border-bottom: 1px solid gray;">Basic Financials</h3>
           <div style="font-size: 14px; color: #666;">
             <strong>Revenue:</strong> ${data.basicFinancials.revenue}
             <strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}
@@ -159,7 +162,7 @@ async function performStockSearch() {
             <strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}
             <strong>EPS Annual:</strong> ${data.basicFinancials.epsAnnual}
           </div>
-          <h3 style="margin-top:24px;">Latest News</h3>
+          <h3 style="margin-top:24px;border-bottom: 1px solid gray;">Latest News</h3>
           <div id="newsFeed">
             ${
               Array.isArray(data.news) && data.news.length
@@ -202,21 +205,6 @@ document.querySelector('.search-icon').addEventListener('click', function() {
 });
 
 // --- Trigger search on clicking a suggestion ---
-// suggestionsList.addEventListener('click', (e) => {
-//   const item = e.target.closest('.suggestion-item');
-//   if (item) {
-//     const idx = parseInt(item.getAttribute('data-idx'), 10);
-//     tickerInput.value = suggestions[idx].symbol;
-//     clearSuggestions();
-//     tickerInput.focus();
-//     performStockSearch();
-//   }
-// }); 
-
-document.addEventListener('DOMContentLoaded', () => {
-  alert(suggestionsList);
-});
-
 document.addEventListener('DOMContentLoaded', () => {
   suggestionsList.addEventListener('click', (e) => {
     alert('clicked');
