@@ -3,6 +3,7 @@ const API_BASE_URL = 'https://peppercorn-backend.onrender.com';
 // --- Autocomplete for ticker input ---
 const tickerInput = document.getElementById('ticker');
 const suggestionsList = document.getElementById('tickerSuggestions');
+const resultElem = document.getElementById('stockResult');
 let suggestions = [];
 let activeIndex = -1;
 let debounceTimeout = null;
@@ -106,11 +107,17 @@ document.getElementById('submitEmail').addEventListener('click', async () => {
   }
 });
 
+// by default hide the result panel
+if (resultElem) {
+  resultElem.style.display = 'none';
+}
+
 // --- Stock Search Logic ---
 async function performStockSearch() {
   const ticker = document.getElementById('ticker').value;
-  const resultElem = document.getElementById('stockResult');
   resultElem.textContent = '';
+  resultElem.style.display = 'block';
+
   if (!ticker) {
     resultElem.textContent = 'Please enter a ticker symbol.';
     return;
@@ -122,6 +129,8 @@ async function performStockSearch() {
       const changeColor = data.dailyChange >= 0 ? 'green' : 'red';
       const changeSymbol = data.dailyChange >= 0 ? '+' : '';
       
+      resultElem.style.display = 'block';
+
       resultElem.innerHTML = `
           <div style="margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
           <div style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em;">
