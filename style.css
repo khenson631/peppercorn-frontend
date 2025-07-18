@@ -79,13 +79,14 @@ button:hover {
 
 .suggestions-list {
   position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
   z-index: 1000;
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  width: 90%;
-  max-width: 350px;
   margin-top: 2px;
   max-height: 220px;
   overflow-y: auto;
@@ -102,8 +103,8 @@ button:hover {
 }
 @media (max-width: 500px) {
   .suggestions-list {
-    width: 98%;
-    max-width: 98vw;
+    left: 0;
+    right: 0;
   }
 }
 
@@ -171,6 +172,7 @@ button:hover {
   max-width: 100%;
   margin: 0 auto 16px auto;
   border: none;
+  position: relative;
 }
 .search-bar:focus-within {
   box-shadow: 0 2px 12px rgba(60,60,60,0.16);
