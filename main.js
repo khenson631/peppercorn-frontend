@@ -86,26 +86,26 @@ document.addEventListener('click', (e) => {
   }
 });
 
-document.getElementById('submitEmail').addEventListener('click', async () => {
-  const email = document.getElementById('email').value;
-  const msgElem = document.getElementById('emailMsg');
-  msgElem.textContent = '';
-  if (!email) {
-    msgElem.textContent = 'Please enter an email address.';
-    return;
-  }
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/waitlist`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-    const data = await res.json();
-    msgElem.textContent = data.message || data.error || 'Unknown response';
-  } catch (err) {
-    msgElem.textContent = 'Error submitting email.';
-  }
-});
+// document.getElementById('submitEmail').addEventListener('click', async () => {
+//   const email = document.getElementById('email').value;
+//   const msgElem = document.getElementById('emailMsg');
+//   msgElem.textContent = '';
+//   if (!email) {
+//     msgElem.textContent = 'Please enter an email address.';
+//     return;
+//   }
+//   try {
+//     const res = await fetch(`${API_BASE_URL}/api/waitlist`, {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({ email })
+//     });
+//     const data = await res.json();
+//     msgElem.textContent = data.message || data.error || 'Unknown response';
+//   } catch (err) {
+//     msgElem.textContent = 'Error submitting email.';
+//   }
+// });
 
 // by default hide the result panel
 if (resultElem) {
