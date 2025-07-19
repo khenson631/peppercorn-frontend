@@ -112,14 +112,71 @@ if (resultElem) {
   resultElem.style.display = 'none';
 }
 
+// --- TradingView Chart Integration ---
+let chart, candleSeries;
+let currentRange = { range: '6mo', interval: '1d' };
+let lastTicker = '';
+
+async function fetchHistoricalData(ticker, range = '6mo', interval = '1d') {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/history/${ticker}?range=${range}&interval=${interval}`);
+    const json = await res.json();
+    if (!json.data || !json.data.length) throw new Error('No chart data');
+    return json.data.map(bar => ({ ...bar, time: bar.time }));
+  } catch (err) {
+    return [];
+  }
+}
+
+function renderStockChart(ohlcData) {
+  const chartDiv = document.getElementById('stockChart');
+  if (!ohlcData.length) {
+    chartDiv.style.display = 'none';
+    chartDiv.innerHTML = '';
+    return;
+  }
+  chartDiv.style.display = 'block';
+  chartDiv.innerHTML = '';
+  chart = LightweightCharts.createChart(chartDiv, {
+    width: chartDiv.offsetWidth,
+    height: 350,
+    layout: { background: { color: '#fff' }, textColor: '#222' },
+    grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
+    timeScale: { timeVisible: true, secondsVisible: false }
+  });
+  candleSeries = chart.addCandlestickSeries();
+  candleSeries.setData(ohlcData);
+  window.addEventListener('resize', () => {
+    chart.applyOptions({ width: chartDiv.offsetWidth });
+  });
+}
+
+function setActiveRangeLabel(range, interval) {
+  document.querySelectorAll('.range-label').forEach(label => {
+    if (label.dataset.range === range && label.dataset.interval === interval) {
+      label.classList.add('active');
+    } else {
+      label.classList.remove('active');
+    }
+  });
+}
+
+async function updateChartForTickerAndRange(ticker, range, interval) {
+  setActiveRangeLabel(range, interval);
+  const ohlcData = await fetchHistoricalData(ticker, range, interval);
+  renderStockChart(ohlcData);
+}
+
 // --- Stock Search Logic ---
 async function performStockSearch() {
   const ticker = document.getElementById('ticker').value;
   resultElem.textContent = '';
   resultElem.style.display = 'block';
+  lastTicker = ticker;
 
   if (!ticker) {
     resultElem.textContent = 'Please enter a ticker symbol.';
+    document.getElementById('stockChart').style.display = 'none';
     return;
   }
   try {
@@ -193,11 +250,15 @@ async function performStockSearch() {
           </div>
         </div>
       `;
+      // Fetch and render chart for current range
+      await updateChartForTickerAndRange(ticker, currentRange.range, currentRange.interval);
     } else {
       resultElem.textContent = data.error || 'No result found.';
+      document.getElementById('stockChart').style.display = 'none';
     }
   } catch (err) {
     resultElem.textContent = 'Error fetching stock score.';
+    document.getElementById('stockChart').style.display = 'none';
   }
 }
 
@@ -231,4 +292,15 @@ document.addEventListener('DOMContentLoaded', () => {
     tickerInput.focus();
     performStockSearch();
   });
+  // Range selector event
+  document.getElementById('chartRangeSelector').addEventListener('click', async (e) => {
+    const label = e.target.closest('.range-label');
+    if (!label || !lastTicker) return;
+    const range = label.dataset.range;
+    const interval = label.dataset.interval;
+    currentRange = { range, interval };
+    await updateChartForTickerAndRange(lastTicker, range, interval);
+  });
+  // Set default active range
+  setActiveRangeLabel(currentRange.range, currentRange.interval);
 });
