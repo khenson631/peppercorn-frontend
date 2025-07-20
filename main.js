@@ -149,6 +149,8 @@ function renderStockChart(ohlcData) {
   }
   chartDiv.style.display = 'block';
   chartDiv.innerHTML = '';
+  // Debug logs
+  console.log('LightweightCharts:', typeof LightweightCharts, LightweightCharts);
   chart = LightweightCharts.createChart(chartDiv, {
     width: chartDiv.offsetWidth,
     height: 350,
@@ -156,6 +158,10 @@ function renderStockChart(ohlcData) {
     grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
     timeScale: { timeVisible: true, secondsVisible: false }
   });
+  console.log('chart object:', chart);
+  if (!chart.addCandlestickSeries) {
+    console.error('addCandlestickSeries is undefined on chart:', chart);
+  }
   candleSeries = chart.addCandlestickSeries();
   candleSeries.setData(ohlcData);
   window.addEventListener('resize', () => {
