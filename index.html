@@ -17,7 +17,7 @@
       <p id="emailMsg"></p>
     </section> -->
 
-    <section>
+    <section id="resultContainer">
       <h2>Check a Stock</h2>
       <div class="search-bar">
         <svg class="search-icon" width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -28,9 +28,7 @@
         <div id="tickerSuggestions" class="suggestions-list"></div>
       </div>
       <div id="stockResult"></div>
-    </section>
-  </div>
-  <!-- Add TradingView Lightweight Charts CDN -->
+       <!-- Add TradingView Lightweight Charts CDN -->
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <!-- Range Selector for Stock Chart -->
   <div id="chartRangeSelector" style="display:flex;justify-content:center;gap:12px;margin:16px auto 0;max-width:700px;flex-wrap:wrap;">
@@ -46,32 +44,9 @@
   </div>
   <!-- Add chart container below main content -->
   <div id="stockChart" style="width:100%;max-width:700px;height:350px;margin:24px auto 0;display:none;"></div>
+    </section>
+  </div>
+ 
   <script src="main.js"></script>
-  <style>
-    .range-label {
-      cursor: pointer;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-weight: 500;
-      color: #333;
-      background: #f3f3f3;
-      transition: background 0.15s, color 0.15s;
-      user-select: none;
-      font-size: 1em;
-    }
-    .range-label.active {
-      background: #1976d2;
-      color: #fff;
-    }
-    @media (max-width: 600px) {
-      #chartRangeSelector {
-        gap: 6px;
-        font-size: 0.95em;
-      }
-      #stockChart {
-        height: 220px !important;
-      }
-    }
-  </style>
 </body>
 </html> 

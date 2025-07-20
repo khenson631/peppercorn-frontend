@@ -4,6 +4,7 @@ const API_BASE_URL = 'https://peppercorn-backend.onrender.com';
 const tickerInput = document.getElementById('ticker');
 const suggestionsList = document.getElementById('tickerSuggestions');
 const resultElem = document.getElementById('stockResult');
+const stockChart = document.getElementById('stockChart');
 let suggestions = [];
 let activeIndex = -1;
 let debounceTimeout = null;
@@ -86,6 +87,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// Waitlist Email
 // document.getElementById('submitEmail').addEventListener('click', async () => {
 //   const email = document.getElementById('email').value;
 //   const msgElem = document.getElementById('emailMsg');
@@ -116,6 +118,16 @@ if (resultElem) {
 let chart, candleSeries;
 let currentRange = { range: '6mo', interval: '1d' };
 let lastTicker = '';
+
+// by default hide the stock chart
+if (stockChart) {
+  stockChart.style.display = 'none';
+}
+
+// by default hide the date range labels
+document.querySelectorAll('.range-label').forEach(label => { 
+    label.style.display = 'none';
+});
 
 async function fetchHistoricalData(ticker, range = '6mo', interval = '1d') {
   try {
