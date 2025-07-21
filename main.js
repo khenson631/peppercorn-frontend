@@ -124,10 +124,19 @@ if (stockChart) {
   stockChart.style.display = 'none';
 }
 
-// by default hide the date range labels
-document.querySelectorAll('.range-label').forEach(label => { 
+// Hide the date range labels on initial load
+function hideRangeLabels() {
+  document.querySelectorAll('.range-label').forEach(label => {
     label.style.display = 'none';
-});
+  });
+}
+function showRangeLabels() {
+  document.querySelectorAll('.range-label').forEach(label => {
+    label.style.display = 'inline-block';
+  });
+}
+
+hideRangeLabels();
 
 async function fetchHistoricalData(ticker, range = '6mo', interval = '1d') {
   try {
@@ -195,6 +204,7 @@ async function performStockSearch() {
   if (!ticker) {
     resultElem.textContent = 'Please enter a ticker symbol.';
     document.getElementById('stockChart').style.display = 'none';
+    hideRangeLabels();
     return;
   }
   try {
@@ -270,13 +280,16 @@ async function performStockSearch() {
       `;
       // Fetch and render chart for current range
       await updateChartForTickerAndRange(ticker, currentRange.range, currentRange.interval);
+      showRangeLabels();
     } else {
       resultElem.textContent = data.error || 'No result found.';
       document.getElementById('stockChart').style.display = 'none';
+      hideRangeLabels();
     }
   } catch (err) {
     resultElem.textContent = 'Error fetching stock score.';
     document.getElementById('stockChart').style.display = 'none';
+    hideRangeLabels();
   }
 }
 
