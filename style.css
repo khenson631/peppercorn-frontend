@@ -7,11 +7,16 @@ body {
 
 .container {
   min-width: fit-content;
+  min-height: 90vh;
   margin: 1em;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   padding: 1em;
+}
+
+#resultContainer {
+  min-height: 100%;
 }
 
 h1 {
@@ -27,7 +32,6 @@ section {
   align-items: center;
 }
 
-/* input[type="email"], input[type="text"] { */
 input[id="email"] {
   display: flex;
   align-items: center;
@@ -223,3 +227,29 @@ button:hover {
 }
 /* Remove old inline input/button styles */
 #ticker.icon-btn, .icon-btn { display: none !important; } 
+
+/* Stock Price Chart Styling */
+.range-label {
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 500;
+  color: #333;
+  background: #f3f3f3;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+  font-size: 1em;
+}
+.range-label.active {
+  background: #1976d2;
+  color: #fff;
+}
+@media (max-width: 600px) {
+  #chartRangeSelector {
+    gap: 6px;
+    font-size: 0.95em;
+  }
+  #stockChart {
+    height: 220px !important;
+  }
+}

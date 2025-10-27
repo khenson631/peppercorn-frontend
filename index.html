@@ -17,7 +17,10 @@
       <p id="emailMsg"></p>
     </section> -->
 
-    <section>
+    <!-- Add TradingView Lightweight Charts CDN -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+
+    <section id="resultContainer">
       <h2>Check a Stock</h2>
       <div class="search-bar">
         <svg class="search-icon" width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -28,6 +31,7 @@
         <div id="tickerSuggestions" class="suggestions-list"></div>
       </div>
       <div id="stockResult"></div>
+        <!-- Chart and range selector will be injected dynamically -->
     </section>
   </div>
   <script src="main.js"></script>

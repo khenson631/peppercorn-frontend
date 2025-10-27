@@ -5,6 +5,7 @@ const API_BASE_URL = 'https://peppercorn-backend.onrender.com';
 const tickerInput = document.getElementById('ticker');
 const suggestionsList = document.getElementById('tickerSuggestions');
 const resultElem = document.getElementById('stockResult');
+const stockChart = document.getElementById('stockChart');
 let suggestions = [];
 let activeIndex = -1;
 let debounceTimeout = null;
@@ -87,6 +88,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// Waitlist Email
 // document.getElementById('submitEmail').addEventListener('click', async () => {
 //   const email = document.getElementById('email').value;
 //   const msgElem = document.getElementById('emailMsg');
@@ -113,14 +115,112 @@ if (resultElem) {
   resultElem.style.display = 'none';
 }
 
+// --- TradingView Chart Integration ---
+let chart, candleSeries;
+let currentRange = { range: '6mo', interval: '1d' };
+let lastTicker = '';
+
+// by default hide the stock chart
+if (stockChart) {
+  stockChart.style.display = 'none';
+}
+
+// Hide the date range labels on initial load
+function hideRangeLabels() {
+  document.querySelectorAll('.range-label').forEach(label => {
+    label.style.display = 'none';
+  });
+}
+function showRangeLabels() {
+  document.querySelectorAll('.range-label').forEach(label => {
+    label.style.display = 'inline-block';
+  });
+}
+
+hideRangeLabels();
+
+async function fetchHistoricalData(ticker, range = '6mo', interval = '1d') {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/history/${ticker}?range=${range}&interval=${interval}`);
+    const json = await res.json();
+    if (!json.data || !json.data.length) throw new Error('No chart data');
+    return json.data.map(bar => ({ ...bar, time: bar.time }));
+  } catch (err) {
+    return [];
+  }
+}
+
+// Helper to get range selector HTML
+function getRangeSelectorHTML() {
+  return `<div id="chartRangeSelector" style="display:flex;justify-content:center;gap:12px;margin:16px auto 0;max-width:700px;flex-wrap:wrap;">
+    <span class="range-label" data-range="1d" data-interval="5m">1D</span>
+    <span class="range-label" data-range="5d" data-interval="15m">5D</span>
+    <span class="range-label" data-range="1mo" data-interval="1d">1M</span>
+    <span class="range-label" data-range="3mo" data-interval="1d">3M</span>
+    <span class="range-label" data-range="6mo" data-interval="1d">6M</span>
+    <span class="range-label" data-range="1y" data-interval="1d">1Y</span>
+    <span class="range-label" data-range="2y" data-interval="1d">2Y</span>
+    <span class="range-label" data-range="5y" data-interval="1wk">5Y</span>
+    <span class="range-label" data-range="max" data-interval="1mo">MAX</span>
+  </div>`;
+}
+
+function getChartContainerHTML() {
+  return `<div id="stockChart" style="width:100%;max-width:700px;height:350px;margin:24px auto 0;display:none;"></div>`;
+}
+
+// Update renderStockChart to use the dynamic stockChart
+function renderStockChart(ohlcData) {
+  const chartDiv = document.getElementById('stockChart');
+  if (!ohlcData.length) {
+    if (chartDiv) {
+      chartDiv.style.display = 'none';
+      chartDiv.innerHTML = '';
+    }
+    return;
+  }
+  chartDiv.style.display = 'block';
+  chartDiv.innerHTML = '';
+  chart = LightweightCharts.createChart(chartDiv, {
+    width: chartDiv.offsetWidth,
+    height: 350,
+    layout: { background: { color: '#fff' }, textColor: '#222' },
+    grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
+    timeScale: { timeVisible: true, secondsVisible: false }
+  });
+  candleSeries = chart.addCandlestickSeries();
+  candleSeries.setData(ohlcData);
+  window.addEventListener('resize', () => {
+    chart.applyOptions({ width: chartDiv.offsetWidth });
+  });
+}
+
+function setActiveRangeLabel(range, interval) {
+  document.querySelectorAll('.range-label').forEach(label => {
+    if (label.dataset.range === range && label.dataset.interval === interval) {
+      label.classList.add('active');
+    } else {
+      label.classList.remove('active');
+    }
+  });
+}
+
+async function updateChartForTickerAndRange(ticker, range, interval) {
+  setActiveRangeLabel(range, interval);
+  const ohlcData = await fetchHistoricalData(ticker, range, interval);
+  renderStockChart(ohlcData);
+}
+
 // --- Stock Search Logic ---
 async function performStockSearch() {
   const ticker = document.getElementById('ticker').value;
   resultElem.textContent = '';
   resultElem.style.display = 'block';
+  lastTicker = ticker;
 
   if (!ticker) {
     resultElem.textContent = 'Please enter a ticker symbol.';
+    hideRangeLabels();
     return;
   }
   try {
@@ -129,11 +229,10 @@ async function performStockSearch() {
     if (data.label && data.confidence) {
       const changeColor = data.dailyChange >= 0 ? 'green' : 'red';
       const changeSymbol = data.dailyChange >= 0 ? '+' : '';
-      
       resultElem.style.display = 'block';
-
+      // Inject result, range selector, and chart container
       resultElem.innerHTML = `
-          <div style="margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+        <div style="margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
           <div style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em;">
             <strong>${data.companyName}</strong> (${data.ticker})
           </div>
@@ -193,12 +292,28 @@ async function performStockSearch() {
             }
           </div>
         </div>
+        ${getRangeSelectorHTML()}
+        ${getChartContainerHTML()}
       `;
+      // Fetch and render chart for current range
+      await updateChartForTickerAndRange(ticker, currentRange.range, currentRange.interval);
+      showRangeLabels();
+      // Attach event listener for range selector (since it's now dynamic)
+      document.getElementById('chartRangeSelector').addEventListener('click', async (e) => {
+        const label = e.target.closest('.range-label');
+        if (!label || !lastTicker) return;
+        const range = label.dataset.range;
+        const interval = label.dataset.interval;
+        currentRange = { range, interval };
+        await updateChartForTickerAndRange(lastTicker, range, interval);
+      });
     } else {
       resultElem.textContent = data.error || 'No result found.';
+      hideRangeLabels();
     }
   } catch (err) {
     resultElem.textContent = 'Error fetching stock score.';
+    hideRangeLabels();
   }
 }
 
@@ -232,4 +347,15 @@ document.addEventListener('DOMContentLoaded', () => {
     tickerInput.focus();
     performStockSearch();
   });
+  // Range selector event
+  // document.getElementById('chartRangeSelector').addEventListener('click', async (e) => {
+  //   const label = e.target.closest('.range-label');
+  //   if (!label || !lastTicker) return;
+  //   const range = label.dataset.range;
+  //   const interval = label.dataset.interval;
+  //   currentRange = { range, interval };
+  //   await updateChartForTickerAndRange(lastTicker, range, interval);
+  // });
+  // Set default active range
+  setActiveRangeLabel(currentRange.range, currentRange.interval);
 });
