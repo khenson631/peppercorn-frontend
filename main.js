@@ -1,3 +1,4 @@
+// Use production backend (Render has API key configured)
 const API_BASE_URL = 'https://peppercorn-backend.onrender.com';
 
 // --- Autocomplete for ticker input ---
