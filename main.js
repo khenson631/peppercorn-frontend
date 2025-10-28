@@ -214,8 +214,12 @@ async function updateChartForTickerAndRange(ticker, range, interval) {
 // --- Stock Search Logic ---
 async function performStockSearch() {
   const ticker = document.getElementById('ticker').value;
-  resultElem.textContent = '';
+
   resultElem.style.display = 'block';
+  resultElem.innerHTML = `<div style="display: flex; justify-content: center; align-items: center; height: 200px;">
+    <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+  </div>`;
+
   lastTicker = ticker;
 
   if (!ticker) {
