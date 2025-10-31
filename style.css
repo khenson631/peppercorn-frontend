@@ -19,10 +19,26 @@ body {
   min-height: 100%;
 }
 
+/* Header Container */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  gap: 2rem;
+}
+
 h1 {
   font-size: 2rem;
-  margin-bottom: 1.5rem;
-  text-align: center;
+  margin: 0;
+  font-weight: bold;
+  color: #000;
+}
+
+.header-container h1 {
+  font-size: 2rem;
+  margin: 0;
 }
 
 section {
@@ -83,7 +99,7 @@ button:hover {
 
 .suggestions-list {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
   z-index: 1000;
@@ -91,7 +107,6 @@ button:hover {
   border: 1px solid #ccc;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-top: 2px;
   max-height: 220px;
   overflow-y: auto;
   display: none;
@@ -168,18 +183,23 @@ button:hover {
   align-items: center;
   justify-content: flex-start;
   background: #fff;
-  border-radius: 32px;
-  box-shadow: 0 2px 8px rgba(158, 32, 32, 0.2);
+  border-radius: 999px;
   padding: 0 20px;
   height: 48px;
-  min-width: 75%;
-  max-width: 100%;
-  margin: 0 auto 16px auto;
+  flex: 1;
+  max-width: 600px;
+  margin-left: 0;
+  margin-right: auto;
   border: none;
   position: relative;
+  box-shadow: 
+    0 -2px 8px rgba(255, 182, 193, 0.3),
+    0 2px 8px rgba(255, 182, 193, 0.3);
 }
 .search-bar:focus-within {
-  box-shadow: 0 2px 12px rgba(60,60,60,0.16);
+  box-shadow: 
+    0 -2px 10px rgba(255, 182, 193, 0.4),
+    0 2px 10px rgba(255, 182, 193, 0.4);
 }
 .search-icon {
   flex-shrink: 0;
@@ -207,14 +227,32 @@ button:hover {
   margin-top: auto;
 }
 #ticker::placeholder {
-  color: #444;
-  opacity: 0.7;
+  color: #000;
+  opacity: 1;
+  font-weight: bold;
 }
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .header-container h1 {
+    text-align: center;
+  }
+  
+  .search-bar {
+    max-width: 100%;
+    margin-left: 0;
+  }
+}
+
 @media (max-width: 600px) {
   .search-bar {
     height: 40px;
     padding: 0 12px;
-    max-width: 98vw;
   }
   .search-icon {
     width: 18px;
@@ -223,6 +261,9 @@ button:hover {
   }
   #ticker {
     font-size: 1rem;
+  }
+  .header-container h1 {
+    font-size: 1.5rem;
   }
 }
 /* Remove old inline input/button styles */
@@ -260,7 +301,7 @@ button:hover {
   100% { transform: rotate(360deg); }
 }
 
-.result-container {
+.header-container {
   display: flex;
   flex-direction: row;
 }
