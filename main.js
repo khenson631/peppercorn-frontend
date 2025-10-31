@@ -9,6 +9,7 @@ const stockChart = document.getElementById('stockChart');
 let suggestions = [];
 let activeIndex = -1;
 let debounceTimeout = null;
+let isFirstSearch = true;
 
 function clearSuggestions() {
   suggestionsList.innerHTML = '';
@@ -216,8 +217,15 @@ async function performStockSearch() {
   const ticker = document.getElementById('ticker').value;
 
   resultElem.style.display = 'block';
-  resultElem.innerHTML = `<div style="display: flex; justify-content: center; align-items: center; height: 200px;">
+  
+  // Show message on first search about server wake-up time
+  const loadingMessage = isFirstSearch 
+    ? '<div style="margin-top: 16px; color: #666; font-size: 14px; text-align: center; max-width: 400px; margin-left: auto; margin-right: auto;">Server may take longer to respond on first request (free plan - server wakes up from idle state)</div>'
+    : '';
+  
+  resultElem.innerHTML = `<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 200px;">
     <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    ${loadingMessage}
   </div>`;
 
   lastTicker = ticker;
@@ -315,9 +323,13 @@ async function performStockSearch() {
       resultElem.textContent = data.error || 'No result found.';
       hideRangeLabels();
     }
+    // Mark that we've completed at least one search
+    isFirstSearch = false;
   } catch (err) {
     resultElem.textContent = 'Error fetching stock score.';
     hideRangeLabels();
+    // Mark that we've completed at least one search attempt
+    isFirstSearch = false;
   }
 }
 
