@@ -153,7 +153,7 @@ async function fetchHistoricalData(ticker, range = '6mo', interval = '1d') {
 
 // Helper to get range selector HTML
 function getRangeSelectorHTML() {
-  return `<div id="chartRangeSelector" style="display:flex;justify-content:center;gap:12px;margin:16px auto 0;max-width:700px;flex-wrap:wrap;">
+  return `<div id="chartRangeSelector" style="display:flex;justify-content:center;gap:12px;margin:16px 0 0 0;flex-wrap:wrap;">
     <span class="range-label" data-range="1d" data-interval="5m">1D</span>
     <span class="range-label" data-range="5d" data-interval="15m">5D</span>
     <span class="range-label" data-range="1mo" data-interval="1d">1M</span>
@@ -167,7 +167,7 @@ function getRangeSelectorHTML() {
 }
 
 function getChartContainerHTML() {
-  return `<div id="stockChart" style="width:100%;max-width:700px;height:350px;margin:24px auto 0;display:none;"></div>`;
+  return `<div id="stockChart" style="width:100%;height:350px;margin:16px 0 0 0;display:none;"></div>`;
 }
 
 // Update renderStockChart to use the dynamic stockChart
@@ -246,43 +246,58 @@ async function performStockSearch() {
       resultElem.innerHTML = `
         <div style="margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
           <div style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em;">
-            <strong>${data.companyName}</strong> (${data.ticker})
+            <strong>${data.companyName}</strong> (${data.ticker}) <span style="font-size: 0.7em; color: ${changeColor};">${changeSymbol}${data.dailyChange?.toFixed(2) || 'N/A'} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || 'N/A'}%)</span>
           </div>
-          <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
-            <strong>${data.label}</strong> (${data.confidence} confidence)
+          
+          <!-- Two-column layout: Stock Info/Financials | Chart -->
+          <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+            <!-- Left Column: Stock Info and Financials -->
+            <div style="flex: 1; min-width: 300px;">
+              <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+                <strong>${data.label}</strong> (${data.confidence} confidence)
+              </div>
+              <div style="margin-bottom: 8px;">
+                <strong>Current Price:</strong> $${data.currentPrice?.toFixed(2) || 'N/A'}
+              </div>
+              <div style="margin-bottom: 8px; color: ${changeColor};">
+                <strong>Daily Change:</strong> ${changeSymbol}$${data.dailyChange?.toFixed(2) || 'N/A'} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || 'N/A'}%)
+              </div>
+              <div style="margin-bottom: 8px;">
+                <strong>Previous Close:</strong> $${data.previousClose?.toFixed(2) || 'N/A'}
+              </div>
+              <div style="font-size: 14px; color: #666; margin-bottom: 8px;">
+                ${data.sentiment} • ${data.trend} • ${data.insider}
+              </div>
+              <div style="font-size: 14px; color: #666; margin-bottom: 16px;">
+                <strong>High Price:</strong> $${data.highPrice?.toFixed(2) || 'N/A'}
+                <strong>Low Price:</strong> $${data.lowPrice?.toFixed(2) || 'N/A'}
+                <strong>Open Price:</strong> $${data.openPrice?.toFixed(2) || 'N/A'}
+                <strong>Volume:</strong> ${data.volume?.toLocaleString() || 'N/A'}
+              </div>
+              <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Basic Financials</h3>
+              <div style="font-size: 14px; color: #666;">
+                <strong>Revenue:</strong> ${data.basicFinancials.revenue}
+                <strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}
+                <strong>Current Ratio:</strong> ${data.basicFinancials.currentRatioAnnual}
+                <br>
+                <strong>Debt to Equity:</strong> ${data.basicFinancials.totalDebtToEquity}
+                <strong>Price to Earnings:</strong> ${data.basicFinancials.priceToEarnings}
+                <strong>Dividend Yield:</strong> ${data.basicFinancials.dividendYieldTTM}
+                <br>
+                <strong>Return on Equity:</strong> ${data.basicFinancials.returnOnEquity}
+                <strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}
+                <strong>EPS Annual:</strong> ${data.basicFinancials.epsAnnual}
+              </div>
+            </div>
+            
+            <!-- Right Column: Chart -->
+            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+              ${getRangeSelectorHTML()}
+              ${getChartContainerHTML()}
+            </div>
           </div>
-          <div style="margin-bottom: 8px;">
-            <strong>Current Price:</strong> $${data.currentPrice?.toFixed(2) || 'N/A'}
-          </div>
-          <div style="margin-bottom: 8px; color: ${changeColor};">
-            <strong>Daily Change:</strong> ${changeSymbol}$${data.dailyChange?.toFixed(2) || 'N/A'} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || 'N/A'}%)
-          </div>
-          <div style="margin-bottom: 8px;">
-            <strong>Previous Close:</strong> $${data.previousClose?.toFixed(2) || 'N/A'}
-          </div>
-          <div style="font-size: 14px; color: #666;">
-            ${data.sentiment} • ${data.trend} • ${data.insider}
-          </div>
-          <div style="font-size: 14px; color: #666;">
-            <strong>High Price:</strong> $${data.highPrice?.toFixed(2) || 'N/A'}
-            <strong>Low Price:</strong> $${data.lowPrice?.toFixed(2) || 'N/A'}
-            <strong>Open Price:</strong> $${data.openPrice?.toFixed(2) || 'N/A'}
-            <strong>Volume:</strong> ${data.volume?.toLocaleString() || 'N/A'}
-          </div>
-          <h3 style="border-bottom: 1px solid gray;">Basic Financials</h3>
-          <div style="font-size: 14px; color: #666;">
-            <strong>Revenue:</strong> ${data.basicFinancials.revenue}
-            <strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}
-            <strong>Current Ratio:</strong> ${data.basicFinancials.currentRatioAnnual}
-            <br>
-            <strong>Debt to Equity:</strong> ${data.basicFinancials.totalDebtToEquity}
-            <strong>Price to Earnings:</strong> ${data.basicFinancials.priceToEarnings}
-            <strong>Dividend Yield:</strong> ${data.basicFinancials.dividendYieldTTM}
-            <br>
-            <strong>Return on Equity:</strong> ${data.basicFinancials.returnOnEquity}
-            <strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}
-            <strong>EPS Annual:</strong> ${data.basicFinancials.epsAnnual}
-          </div>
+          
+          <!-- Latest News - Full Width Below -->
           <h3 style="margin-top:24px;border-bottom: 1px solid gray;">Latest News</h3>
           <div id="newsFeed">
             ${
@@ -304,8 +319,6 @@ async function performStockSearch() {
             }
           </div>
         </div>
-        ${getRangeSelectorHTML()}
-        ${getChartContainerHTML()}
       `;
       // Fetch and render chart for current range
       await updateChartForTickerAndRange(ticker, currentRange.range, currentRange.interval);
