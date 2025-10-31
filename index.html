@@ -8,19 +8,11 @@
 </head>
 <body>
   <div class="container">
-    <h1>📈 BuyOrSell</h1>
-
-    <!-- <section>
-      <h2>Join the Waitlist</h2>
-      <input id="email" type="email" placeholder="you@example.com" />
-      <button id="submitEmail">Submit</button>
-      <p id="emailMsg"></p>
-    </section> -->
-
     <!-- Add TradingView Lightweight Charts CDN -->
     <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
-
-    <section id="resultContainer">
+    
+    <div class="header-container">
+      <h1>📈 BuyOrSell</h1>
       <h2>Check a Stock</h2>
       <div class="search-bar">
         <svg class="search-icon" width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -28,8 +20,11 @@
           <line x1="14.2" y1="14.2" x2="18" y2="18" stroke="#888" stroke-width="2" stroke-linecap="round"/>
         </svg>
         <input id="ticker" type="text" placeholder="Search for stocks" autocomplete="off" />
-        <div id="tickerSuggestions" class="suggestions-list"></div>
       </div>
+        <div id="tickerSuggestions" class="suggestions-list"></div>
+    </div>
+
+    <section id="resultContainer">  
       <div id="stockResult"></div>
         <!-- Chart and range selector will be injected dynamically -->
     </section>
