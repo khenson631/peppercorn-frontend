@@ -244,8 +244,9 @@ async function performStockSearch() {
       resultElem.style.display = 'block';
       // Inject result, range selector, and chart container
       resultElem.innerHTML = `
-        <div style="margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
-          <div style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em;">
+        <div style="border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 0 0 1px #ddd;">
+          <div style="padding: 15px; background: #f9f9f9;">
+            <div style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em;">
             <strong>${data.companyName}</strong> (${data.ticker}) <span style="font-size: 0.7em; color: ${changeColor};">${changeSymbol}${data.dailyChange?.toFixed(2) || 'N/A'} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || 'N/A'}%)</span>
           </div>
           
@@ -318,6 +319,7 @@ async function performStockSearch() {
                 : '<div style="color:#888;">No recent news found.</div>'
             }
           </div>
+          </div>
         </div>
       `;
       // Fetch and render chart for current range
@@ -376,15 +378,6 @@ document.addEventListener('DOMContentLoaded', () => {
     tickerInput.focus();
     performStockSearch();
   });
-  // Range selector event
-  // document.getElementById('chartRangeSelector').addEventListener('click', async (e) => {
-  //   const label = e.target.closest('.range-label');
-  //   if (!label || !lastTicker) return;
-  //   const range = label.dataset.range;
-  //   const interval = label.dataset.interval;
-  //   currentRange = { range, interval };
-  //   await updateChartForTickerAndRange(lastTicker, range, interval);
-  // });
-  // Set default active range
+
   setActiveRangeLabel(currentRange.range, currentRange.interval);
 });

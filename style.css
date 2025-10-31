@@ -17,6 +17,7 @@ body {
 
 #resultContainer {
   min-height: 100%;
+  border: none;
 }
 
 /* Header Container */
@@ -90,8 +91,8 @@ button:hover {
 }
 
 #stockResult {
-  margin-top: 1rem;
-  padding: 0.75rem;
+  margin: 0;
+  padding: 0;
   border: 1px solid #d1d5db;
   border-radius: 4px;
   background: #f1f5f9;
@@ -304,4 +305,6 @@ button:hover {
 .header-container {
   display: flex;
   flex-direction: row;
+  margin-bottom: auto;
+  padding: 1rem;
 }
