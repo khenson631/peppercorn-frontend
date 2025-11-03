@@ -73,13 +73,19 @@ tickerInput.addEventListener('keydown', (e) => {
   }
 });
 
-suggestionsList.addEventListener('mousedown', (e) => {
+// Search ticker on click
+suggestionsList.addEventListener('click', (e) => {
   const item = e.target.closest('.suggestion-item');
   if (item) {
+    e.preventDefault();
+    e.stopPropagation();
     const idx = parseInt(item.getAttribute('data-idx'), 10);
-    tickerInput.value = suggestions[idx].symbol;
-    clearSuggestions();
-    tickerInput.focus();
+    if (idx >= 0 && idx < suggestions.length) {
+      tickerInput.value = suggestions[idx].symbol;
+      clearSuggestions();
+      tickerInput.focus();
+      performStockSearch();
+    }
   }
 });
 
@@ -358,26 +364,4 @@ document.getElementById('ticker').addEventListener('keydown', function(e) {
 // --- Trigger search on clicking the magnifying glass icon ---
 document.querySelector('.search-icon').addEventListener('click', function() {
   performStockSearch();
-});
-
-// --- Trigger search on clicking a suggestion ---
-document.addEventListener('DOMContentLoaded', () => {
-  suggestionsList.addEventListener('click', (e) => {
-    alert('clicked');
-
-    const item = e.target.closest('.suggestion-item');
-    if (!item) return; // click outside a suggestion item
-
-    const idx = parseInt(item.getAttribute('data-idx'), 10);
-    const selected = suggestions[idx];
-
-    if (!selected) return; // safeguard against invalid index
-
-    tickerInput.value = selected.symbol;
-    clearSuggestions();
-    tickerInput.focus();
-    performStockSearch();
-  });
-
-  setActiveRangeLabel(currentRange.range, currentRange.interval);
 });
