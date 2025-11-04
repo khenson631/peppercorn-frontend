@@ -1,5 +1,6 @@
-// Use production backend (Render has API key configured)
-const API_BASE_URL = 'https://peppercorn-backend.onrender.com';
+// Use local backend for testing (change back to production for deployment)
+// const API_BASE_URL = 'http://localhost:5000'; // Local backend for testing
+const API_BASE_URL = 'https://peppercorn-backend.onrender.com';  // Production backend
 
 // --- Autocomplete for ticker input ---
 const tickerInput = document.getElementById('ticker');
