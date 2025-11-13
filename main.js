@@ -251,13 +251,23 @@ async function performStockSearch() {
       resultElem.style.display = 'block';
       // Inject result, range selector, and chart container
       resultElem.innerHTML = `
-        <div style="border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 0 0 1px #ddd;">
+        <div style="border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 0 0 1px #ddd; line-height:1.2">
           <div style="padding: 15px; background: #f9f9f9;">
-            <div style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em;">
-            <strong>${data.companyName}</strong> (${data.ticker}) <span style="font-size: 0.7em; color: ${changeColor};">${changeSymbol}${data.dailyChange?.toFixed(2) || 'N/A'} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || 'N/A'}%)</span>
+            <div id="tickerHeader" style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em;">
+            <strong>${data.companyName}</strong> (${data.ticker})
+            <br>
+            <span style="font-size:.85em">$${data.currentPrice?.toFixed(2)}</span> <span style="font-size: 0.7em; color: ${changeColor};">${changeSymbol}${data.dailyChange?.toFixed(2) || 'N/A'} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || 'N/A'}%)</span>            
+            <br>
+            <span style="font-size:.44em">At close: 4:00:01 PM EST</span>
           </div>
           
-          <!-- Two-column layout: Stock Info/Financials | Chart -->
+          <!--Stock Chart -->
+            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+              ${getRangeSelectorHTML()}
+              ${getChartContainerHTML()}
+            </div>
+
+          <!-- Stock Info/Financials-->
           <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
             <!-- Left Column: Stock Info and Financials -->
             <div style="flex: 1; min-width: 300px;">
@@ -270,17 +280,20 @@ async function performStockSearch() {
               <div style="margin-bottom: 8px; color: ${changeColor};">
                 <strong>Daily Change:</strong> ${changeSymbol}$${data.dailyChange?.toFixed(2) || 'N/A'} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || 'N/A'}%)
               </div>
-              <div style="margin-bottom: 8px;">
-                <strong>Previous Close:</strong> $${data.previousClose?.toFixed(2) || 'N/A'}
-              </div>
               <div style="font-size: 14px; color: #666; margin-bottom: 8px;">
                 ${data.sentiment} • ${data.trend} • ${data.insider}
               </div>
-              <div style="font-size: 14px; color: #666; margin-bottom: 16px;">
-                <strong>High Price:</strong> $${data.highPrice?.toFixed(2) || 'N/A'}
-                <strong>Low Price:</strong> $${data.lowPrice?.toFixed(2) || 'N/A'}
-                <strong>Open Price:</strong> $${data.openPrice?.toFixed(2) || 'N/A'}
-                <strong>Volume:</strong> ${data.volume?.toLocaleString() || 'N/A'}
+              <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Key Stats</h3>
+              <div style="font-size: 14px; color: #666; margin-bottom: 16px; display:flex; gap: 2rem; justify-content: space-betwen;" id="keyStats" >
+                <div id="keyStatsLeftSide" style="display: flex; flex-direction: column;">
+                  <div style="display: inline;"><strong>Previous Close:</strong> $${data.previousClose?.toFixed(2) || 'N/A'}</div>
+                  <div style="display: inline;"><strong>High Price:</strong> $${data.highPrice?.toFixed(2) || 'N/A'}</div>
+                  <div style="display: inline;"><strong>Low Price:</strong> $${data.lowPrice?.toFixed(2) || 'N/A'}</div>
+                </div>
+                <div id="keyStatsRightSide" style="display: flex; flex-direction: column;">
+                  <div style="display: inline;"> <strong>Open Price:</strong> $${data.openPrice?.toFixed(2) || 'N/A'}</div>
+                  <div style="display: inline;"><strong>Volume:</strong> ${data.volume?.toLocaleString() || 'N/A'}</div>
+                </div>
               </div>
               <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Basic Financials</h3>
               <div style="font-size: 14px; color: #666;">
@@ -296,12 +309,6 @@ async function performStockSearch() {
                 <strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}
                 <strong>EPS Annual:</strong> ${data.basicFinancials.epsAnnual}
               </div>
-            </div>
-            
-            <!-- Right Column: Chart -->
-            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
-              ${getRangeSelectorHTML()}
-              ${getChartContainerHTML()}
             </div>
           </div>
           
