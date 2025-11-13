@@ -200,7 +200,7 @@ async function updateChartForTickerAndRange(ticker, range, interval) {
 // --- Stock Search Logic ---
 async function performStockSearch() {
   const ticker = document.getElementById('ticker').value;
-
+ 
   resultElem.style.display = 'block';
   
   // Show message on first search about server wake-up time
@@ -221,8 +221,11 @@ async function performStockSearch() {
     return;
   }
   try {
+    
     const res = await fetch(`${API_BASE_URL}/api/score/${ticker}`);
     const data = await res.json();
+    const profileData = await fetchProfileData(ticker);
+    
     if (data.label && data.confidence) {
       const changeColor = data.dailyChange >= 0 ? 'green' : 'red';
       const changeSymbol = data.dailyChange >= 0 ? '+' : '';
@@ -264,7 +267,8 @@ async function performStockSearch() {
               <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Key Stats</h3>
               <div style="font-size: 14px; color: #666; margin-bottom: 16px; display:flex; gap: 2rem; justify-content: space-betwen;" id="keyStats" >
                 <div id="keyStatsLeftSide" style="display: flex; flex-direction: column;">
-                  <div style="display: inline;"><strong>Previous Close:</strong> ${data.previousClose?.toFixed(2) || 'N/A'}</div>
+                <div style="display: inline;"><strong>Exchange:</strong> ${profileData.exchange || 'N/A'}</div>  
+                <div style="display: inline;"><strong>Previous Close:</strong> ${data.previousClose?.toFixed(2) || 'N/A'}</div>
                   <div style="display: inline;"><strong>High Price:</strong> ${data.highPrice?.toFixed(2) || 'N/A'}</div>
                   <div style="display: inline;"><strong>Low Price:</strong> ${data.lowPrice?.toFixed(2) || 'N/A'}</div>
                 </div>
@@ -351,3 +355,15 @@ document.getElementById('ticker').addEventListener('keydown', function(e) {
 document.querySelector('.search-icon').addEventListener('click', function() {
   performStockSearch();
 });
+
+// Get Profile Data
+async function fetchProfileData(ticker) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/profile/${ticker}`);
+    const profileData = await res.json();
+    return profileData;
+  } catch (err) {
+    console.error("Error fetching profile:", err);
+    return null;
+  }
+}
