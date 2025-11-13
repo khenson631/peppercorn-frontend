@@ -292,7 +292,7 @@ async function performStockSearch() {
                 </div>
                 <div id="keyStatsRightSide" style="display: flex; flex-direction: column;">
                   <div style="display: inline;"> <strong>Open Price:</strong> $${data.openPrice?.toFixed(2) || 'N/A'}</div>
-                  <div style="display: inline;"><strong>Volume:</strong> ${data.volume?.toLocaleString() || 'N/A'}</div>
+                  <div style="display: inline;"> <strong>52 Week Range:</strong> $${data.basicFinancials?.['52WeekLow']?.toFixed(2)} - $${data.basicFinancials?.['52WeekHigh']?.toFixed(2)} </div>
                 </div>
               </div>
               <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Basic Financials</h3>
