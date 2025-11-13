@@ -96,28 +96,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Waitlist Email
-// document.getElementById('submitEmail').addEventListener('click', async () => {
-//   const email = document.getElementById('email').value;
-//   const msgElem = document.getElementById('emailMsg');
-//   msgElem.textContent = '';
-//   if (!email) {
-//     msgElem.textContent = 'Please enter an email address.';
-//     return;
-//   }
-//   try {
-//     const res = await fetch(`${API_BASE_URL}/api/waitlist`, {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify({ email })
-//     });
-//     const data = await res.json();
-//     msgElem.textContent = data.message || data.error || 'Unknown response';
-//   } catch (err) {
-//     msgElem.textContent = 'Error submitting email.';
-//   }
-// });
-
 // by default hide the result panel
 if (resultElem) {
   resultElem.style.display = 'none';
@@ -286,18 +264,18 @@ async function performStockSearch() {
               <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Key Stats</h3>
               <div style="font-size: 14px; color: #666; margin-bottom: 16px; display:flex; gap: 2rem; justify-content: space-betwen;" id="keyStats" >
                 <div id="keyStatsLeftSide" style="display: flex; flex-direction: column;">
-                  <div style="display: inline;"><strong>Previous Close:</strong> $${data.previousClose?.toFixed(2) || 'N/A'}</div>
-                  <div style="display: inline;"><strong>High Price:</strong> $${data.highPrice?.toFixed(2) || 'N/A'}</div>
-                  <div style="display: inline;"><strong>Low Price:</strong> $${data.lowPrice?.toFixed(2) || 'N/A'}</div>
+                  <div style="display: inline;"><strong>Previous Close:</strong> ${data.previousClose?.toFixed(2) || 'N/A'}</div>
+                  <div style="display: inline;"><strong>High Price:</strong> ${data.highPrice?.toFixed(2) || 'N/A'}</div>
+                  <div style="display: inline;"><strong>Low Price:</strong> ${data.lowPrice?.toFixed(2) || 'N/A'}</div>
                 </div>
                 <div id="keyStatsRightSide" style="display: flex; flex-direction: column;">
                   <div style="display: inline;"> <strong>Open Price:</strong> $${data.openPrice?.toFixed(2) || 'N/A'}</div>
-                  <div style="display: inline;"> <strong>52 Week Range:</strong> $${data.basicFinancials?.['52WeekLow']?.toFixed(2)} - $${data.basicFinancials?.['52WeekHigh']?.toFixed(2)} </div>
+                  <div style="display: inline;"> <strong>52 Week Range:</strong> ${data.basicFinancials?.['52WeekLow']} - ${data.basicFinancials?.['52WeekHigh']} </div>
                 </div>
               </div>
               <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Basic Financials</h3>
               <div style="font-size: 14px; color: #666;">
-                <strong>Revenue:</strong> ${data.basicFinancials.revenue}
+                <strong>Revenue Per Share TTM:</strong> ${data.basicFinancials.revenuePerShareTTM}
                 <strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}
                 <strong>Current Ratio:</strong> ${data.basicFinancials.currentRatioAnnual}
                 <br>
