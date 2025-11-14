@@ -205,7 +205,7 @@ async function performStockSearch() {
   
   // Show message on first search about server wake-up time
   const loadingMessage = isFirstSearch 
-    ? '<div style="margin-top: 16px; color: #666; font-size: 14px; text-align: center; max-width: 400px; margin-left: auto; margin-right: auto;">Server may take longer to respond on first request (free plan - server wakes up from idle state)</div>'
+    ? '<div style="margin-top: 16px; color: #555; font-size: 14px; text-align: center; max-width: 400px; margin-left: auto; margin-right: auto;">Server may take longer to respond on first request (free plan - server wakes up from idle state)</div>'
     : '';
   
   resultElem.innerHTML = `<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 200px;">
@@ -261,35 +261,37 @@ async function performStockSearch() {
               <div style="margin-bottom: 8px; color: ${changeColor};">
                 <strong>Daily Change:</strong> ${changeSymbol}$${data.dailyChange?.toFixed(2) || 'N/A'} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || 'N/A'}%)
               </div>
-              <div style="font-size: 14px; color: #666; margin-bottom: 8px;">
+              <div style="font-size: 14px; color: #555; margin-bottom: 8px;">
                 ${data.sentiment} • ${data.trend} • ${data.insider}
               </div>
               <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Key Stats</h3>
-              <div style="font-size: 14px; color: #666; margin-bottom: 16px; display:flex; gap: 2rem; justify-content: space-betwen;" id="keyStats" >
-                <div id="keyStatsLeftSide" style="display: flex; flex-direction: column;">
-                <div style="display: inline;"><strong>Exchange:</strong> ${profileData.exchange || 'N/A'}</div>  
-                <div style="display: inline;"><strong>Previous Close:</strong> ${data.previousClose?.toFixed(2) || 'N/A'}</div>
+              <div style="font-size: 14px; color: #555; margin-bottom: 16px; display:flex; justify-content: space-evenly;" id="keyStats" >
+                <div id="keyStatsLeftSide" style="display: flex; flex-direction: column; flex: 1;">
+                  <div style="display: inline;"><strong>Exchange:</strong> ${profileData.exchange || 'N/A'}</div>  
+                  <div style="display: inline;"><strong>Previous Close:</strong> ${data.previousClose?.toFixed(2) || 'N/A'}</div>
                   <div style="display: inline;"><strong>High Price:</strong> ${data.highPrice?.toFixed(2) || 'N/A'}</div>
                   <div style="display: inline;"><strong>Low Price:</strong> ${data.lowPrice?.toFixed(2) || 'N/A'}</div>
                 </div>
-                <div id="keyStatsRightSide" style="display: flex; flex-direction: column;">
-                  <div style="display: inline;"> <strong>Open Price:</strong> $${data.openPrice?.toFixed(2) || 'N/A'}</div>
+                <div id="keyStatsRightSide" style="display: flex; flex-direction: column; flex: 1;">
+                  <div style="display: inline;"> <strong>Open Price:</strong> ${data.openPrice?.toFixed(2) || 'N/A'}</div>
                   <div style="display: inline;"> <strong>52 Week Range:</strong> ${data.basicFinancials?.['52WeekLow']} - ${data.basicFinancials?.['52WeekHigh']} </div>
                 </div>
               </div>
               <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Basic Financials</h3>
-              <div style="font-size: 14px; color: #666;">
-                <strong>Revenue Per Share TTM:</strong> ${data.basicFinancials.revenuePerShareTTM}
-                <strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}
-                <strong>Current Ratio:</strong> ${data.basicFinancials.currentRatioAnnual}
-                <br>
-                <strong>Debt to Equity:</strong> ${data.basicFinancials.totalDebtToEquity}
-                <strong>Price to Earnings:</strong> ${data.basicFinancials.priceToEarnings}
-                <strong>Dividend Yield:</strong> ${data.basicFinancials.dividendYieldTTM}
-                <br>
-                <strong>Return on Equity:</strong> ${data.basicFinancials.returnOnEquity}
-                <strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}
-                <strong>EPS Annual:</strong> ${data.basicFinancials.epsAnnual}
+              <div style="font-size: 14px; color: #555; display:flex; gap: 2rem; justify-content: space-betwen;" id="basicFinancials">                
+                <div id="basicFinancialsLeftSide" style="display:flex; flex-direction: column; flex: 1;">
+                  <div style="display: inline;"><strong>Revenue Per Share TTM:</strong> ${data.basicFinancials.revenuePerShareTTM}</div>
+                  <div style="display: inline;"><strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}</div>
+                  <div style="display: inline;"><strong>Current Ratio:</strong> ${data.basicFinancials.currentRatioAnnual}</div>                        
+                  <div style="display: inline;"><strong>Debt to Equity:</strong> ${data.basicFinancials.totalDebtToEquity}</div>
+                  <div style="display: inline;"><strong>Price to Earnings:</strong> ${data.basicFinancials.priceToEarnings}</div>
+                </div>
+                <div id="basicFinancialsRightSide" style="display:flex; flex-direction: column; flex: 1;">
+                  <div style="display: inline;"><strong>Dividend Yield:</strong> ${data.basicFinancials.dividendYieldTTM}</div>
+                  <div style="display: inline;"><strong>Return on Equity:</strong> ${data.basicFinancials.returnOnEquity}</div>
+                  <div style="display: inline;"><strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}</div>
+                  <div style="display: inline;"><strong>EPS Annual:</strong> ${data.basicFinancials.epsAnnual}</div>
+                </div>
               </div>
             </div>
           </div>
