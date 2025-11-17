@@ -278,7 +278,7 @@ async function performStockSearch() {
                 </div>
               </div>
               <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Basic Financials</h3>
-              <div style="font-size: 14px; color: #555; display:flex; gap: 2rem; justify-content: space-betwen;" id="basicFinancials">                
+              <div style="font-size: 14px; color: #555; display:flex; justify-content: space-betwen;" id="basicFinancials">                
                 <div id="basicFinancialsLeftSide" style="display:flex; flex-direction: column; flex: 1;">
                   <div style="display: inline;"><strong>Revenue Per Share TTM:</strong> ${data.basicFinancials.revenuePerShareTTM}</div>
                   <div style="display: inline;"><strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}</div>
