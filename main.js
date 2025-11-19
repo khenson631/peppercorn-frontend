@@ -250,21 +250,25 @@ async function performStockSearch() {
 
           <!-- Stock Info/Financials-->
           <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
-            <!-- Left Column: Stock Info and Financials -->
+          
             <div style="flex: 1; min-width: 300px;">
-              <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
-                <strong>${data.label}</strong> (${data.confidence} confidence)
+              
+              <div id="stockInfoContainer">
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+                  <strong>${data.label}</strong> (${data.confidence} confidence)
+                </div>
+                <div style="margin-bottom: 8px;">
+                  <strong>Current Price:</strong> $${data.currentPrice?.toFixed(2) || 'N/A'}
+                </div>
+                <div style="margin-bottom: 8px; color: ${changeColor};">
+                  <strong>Daily Change:</strong> ${changeSymbol}$${data.dailyChange?.toFixed(2) || 'N/A'} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || 'N/A'}%)
+                </div>
+                <div style="font-size: 14px; color: #555; margin-bottom: 8px;">
+                  ${data.sentiment} | ${data.trend} | ${data.insider}
+                </div>
               </div>
-              <div style="margin-bottom: 8px;">
-                <strong>Current Price:</strong> $${data.currentPrice?.toFixed(2) || 'N/A'}
-              </div>
-              <div style="margin-bottom: 8px; color: ${changeColor};">
-                <strong>Daily Change:</strong> ${changeSymbol}$${data.dailyChange?.toFixed(2) || 'N/A'} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || 'N/A'}%)
-              </div>
-              <div style="font-size: 14px; color: #555; margin-bottom: 8px;">
-                ${data.sentiment} • ${data.trend} • ${data.insider}
-              </div>
-              <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Key Stats</h3>
+
+              <h3 class="sectionHeader">Key Stats</h3>
               <div style="font-size: 14px; color: #555; margin-bottom: 16px; display:flex; justify-content: space-evenly;" id="keyStats" >
                 <div id="keyStatsLeftSide" style="display: flex; flex-direction: column; flex: 1;">
                   <div style="display: inline;"><strong>Exchange:</strong> ${profileData.exchange || 'N/A'}</div>  
@@ -277,7 +281,8 @@ async function performStockSearch() {
                   <div style="display: inline;"> <strong>52 Week Range:</strong> ${data.basicFinancials?.['52WeekLow']} - ${data.basicFinancials?.['52WeekHigh']} </div>
                 </div>
               </div>
-              <h3 style="border-bottom: 1px solid gray; margin-top: 16px;">Basic Financials</h3>
+              
+              <h3 class="sectionHeader">Basic Financials</h3>
               <div style="font-size: 14px; color: #555; display:flex; justify-content: space-betwen;" id="basicFinancials">                
                 <div id="basicFinancialsLeftSide" style="display:flex; flex-direction: column; flex: 1;">
                   <div style="display: inline;"><strong>Revenue Per Share TTM:</strong> ${data.basicFinancials.revenuePerShareTTM}</div>
@@ -297,7 +302,7 @@ async function performStockSearch() {
           </div>
           
           <!-- Latest News - Full Width Below -->
-          <h3 style="margin-top:24px;border-bottom: 1px solid gray;">Latest News</h3>
+          <h3 class="sectionHeader">Latest News</h3>
           <div id="newsFeed">
             ${
               Array.isArray(data.news) && data.news.length
