@@ -8,7 +8,7 @@ body {
 .container {
   min-width: fit-content;
   min-height: 90vh;
-  margin: 1em;
+  margin: 0;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
@@ -315,4 +315,13 @@ button:hover {
   flex-direction: row;
   margin-bottom: auto;
   padding: 1rem;
+}
+
+.sectionHeader {
+  border-bottom: 1px solid gray;
+  margin-top: 16px;
+}
+
+#stockInfoContainer {
+  margin-top: 2rem;
 }
