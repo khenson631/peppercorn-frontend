@@ -103,8 +103,9 @@ if (resultElem) {
 
 // --- TradingView Chart Integration ---
 let chart, candleSeries;
-let currentRange = { range: '6mo', interval: '1d' };
+let currentRange = { range: '1y', interval: '1d' };
 let lastTicker = '';
+let resizeObserver = null;
 
 // by default hide the stock chart
 if (stockChart) {
@@ -130,16 +131,6 @@ function getMarketTimeDisplay() {
     const displaySeconds = String(seconds).padStart(2, '0');
     return `As of ${displayHours}:${displayMinutes}:${displaySeconds} ${ampm} EST`;
   } else {
-    // Format: "At close 4:00:00 PM EST [day]"
-    // If after 4PM today, show "today"; if before 9:30AM, show "yesterday"
-    // let dateStr = '';
-    // if (hours >= 16) {
-    //   // After 4PM - it's today's close
-    //   dateStr = 'today';
-    // } else if (hours < 9 || (hours === 9 && minutes < 30)) {
-    //   // Before 9:30AM - it's yesterday's close
-    //   dateStr = 'yesterday';
-    // }
     return `At close 4:00:00 PM EST`;
   }
 }
@@ -198,6 +189,12 @@ function renderStockChart(ohlcData) {
     }
     return;
   }
+  
+  // Dispose of old chart instance if it exists
+  if (chart) {
+    chart.remove();
+  }
+  
   chartDiv.style.display = 'block';
   chartDiv.innerHTML = '';
   chart = LightweightCharts.createChart(chartDiv, {
@@ -209,9 +206,7 @@ function renderStockChart(ohlcData) {
   });
   candleSeries = chart.addCandlestickSeries();
   candleSeries.setData(ohlcData);
-  window.addEventListener('resize', () => {
-    chart.applyOptions({ width: chartDiv.offsetWidth });
-  });
+  chart.timeScale().fitContent();
 }
 
 function setActiveRangeLabel(range, interval) {
