@@ -106,6 +106,23 @@ let chart, candleSeries;
 let currentRange = { range: '1y', interval: '1d' };
 let lastTicker = '';
 let resizeObserver = null;
+let customInterval = null; // Track if user has manually selected an interval
+
+// Define valid interval combinations for each range
+const VALID_INTERVALS_FOR_RANGE = {
+  '1d': ['1m', '5m', '15m', '30m', '1h', '1d'],
+  '5d': ['1m', '5m', '15m', '30m', '1h', '1d'],
+  '1mo': ['5m', '15m', '30m', '1h', '1d', '1wk'],
+  '3mo': ['1h', '1d', '1wk'],
+  '6mo': ['1h', '1d', '1wk'],
+  '1y': ['1h','1d', '1wk'],
+  '2y': ['1h', '1d', '1wk'],
+  '5y': ['1d', '1wk', '1mo'],
+  'max': ['1mo']
+};
+
+// Get all available intervals
+const ALL_INTERVALS = ['1m', '5m', '15m', '30m', '1h', '1d', '1wk', '1mo'];
 
 // by default hide the stock chart
 if (stockChart) {
@@ -162,16 +179,32 @@ async function fetchHistoricalData(ticker, range = '6mo', interval = '1d') {
 
 // Helper to get range selector HTML
 function getRangeSelectorHTML() {
-  return `<div id="chartRangeSelector" style="display:flex;justify-content:center;gap:12px;margin:16px 0 0 0;flex-wrap:wrap;">
-    <span class="range-label" data-range="1d" data-interval="5m">1D</span>
-    <span class="range-label" data-range="5d" data-interval="15m">5D</span>
-    <span class="range-label" data-range="1mo" data-interval="1d">1M</span>
-    <span class="range-label" data-range="3mo" data-interval="1d">3M</span>
-    <span class="range-label" data-range="6mo" data-interval="1d">6M</span>
-    <span class="range-label" data-range="1y" data-interval="1d">1Y</span>
-    <span class="range-label" data-range="2y" data-interval="1d">2Y</span>
-    <span class="range-label" data-range="5y" data-interval="1wk">5Y</span>
-    <span class="range-label" data-range="max" data-interval="1mo">MAX</span>
+  return `<div id="chartControls" style="display:flex;justify-content:center;align-items:center;gap:20px;margin:16px 0 0 0;flex-wrap:wrap;">
+    <div id="chartRangeSelector" style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+      <span class="range-label" data-range="1d" data-interval="5m">1D</span>
+      <span class="range-label" data-range="5d" data-interval="15m">5D</span>
+      <span class="range-label" data-range="1mo" data-interval="1d">1M</span>
+      <span class="range-label" data-range="3mo" data-interval="1d">3M</span>
+      <span class="range-label" data-range="6mo" data-interval="1d">6M</span>
+      <span class="range-label" data-range="1y" data-interval="1d">1Y</span>
+      <span class="range-label" data-range="2y" data-interval="1d">2Y</span>
+      <span class="range-label" data-range="5y" data-interval="1wk">5Y</span>
+      <span class="range-label" data-range="max" data-interval="1mo">MAX</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label for="intervalDropdown" style="font-size:14px;font-weight:bold;">Interval:</label>
+      <select id="intervalDropdown" style="padding:6px 10px;border:1px solid #ccc;border-radius:4px;font-size:14px;background:#fff;cursor:pointer;">
+        <option value="">Auto</option>
+        <option value="1m">1 Minute</option>
+        <option value="5m">5 Minutes</option>
+        <option value="15m">15 Minutes</option>
+        <option value="30m">30 Minutes</option>
+        <option value="1h">1 Hour</option>
+        <option value="1d">1 Day</option>
+        <option value="1wk">1 Week</option>
+        <option value="1mo">1 Month</option>
+      </select>
+    </div>
   </div>`;
 }
 
@@ -217,6 +250,32 @@ function setActiveRangeLabel(range, interval) {
       label.classList.remove('active');
     }
   });
+  // Update interval dropdown options based on selected range
+  updateIntervalDropdownOptions(range);
+}
+
+function updateIntervalDropdownOptions(range) {
+  const dropdown = document.getElementById('intervalDropdown');
+  if (!dropdown) return;
+  
+  const validIntervals = VALID_INTERVALS_FOR_RANGE[range] || [];
+  const allOptions = dropdown.querySelectorAll('option');
+  
+  allOptions.forEach(option => {
+    if (option.value === '') {
+      option.disabled = false;
+    } else if (validIntervals.includes(option.value)) {
+      option.disabled = false;
+    } else {
+      option.disabled = true;
+    }
+  });
+  
+  // If current interval is not valid for this range, reset to auto
+  if (customInterval && !validIntervals.includes(customInterval)) {
+    dropdown.value = '';
+    customInterval = null;
+  }
 }
 
 async function updateChartForTickerAndRange(ticker, range, interval) {
@@ -361,9 +420,46 @@ async function performStockSearch() {
         const label = e.target.closest('.range-label');
         if (!label || !lastTicker) return;
         const range = label.dataset.range;
-        const interval = label.dataset.interval;
+        let interval = label.dataset.interval;
+        
+        // If user has selected a custom interval, validate it first
+        if (customInterval) {
+          const validIntervals = VALID_INTERVALS_FOR_RANGE[range] || [];
+          if (validIntervals.includes(customInterval)) {
+            interval = customInterval;
+          } else {
+            // Reset to default interval for this range
+            customInterval = null;
+            document.getElementById('intervalDropdown').value = '';
+          }
+        }
+        
         currentRange = { range, interval };
         await updateChartForTickerAndRange(lastTicker, range, interval);
+      });
+      // Attach event listener for interval dropdown
+      document.getElementById('intervalDropdown').addEventListener('change', async (e) => {
+        const selectedInterval = e.target.value;
+        if (!selectedInterval) {
+          // "Auto" selected - use default interval for current range
+          customInterval = null;
+          const defaultInterval = document.querySelector(`.range-label[data-range="${currentRange.range}"]`)?.dataset.interval;
+          currentRange = { range: currentRange.range, interval: defaultInterval || currentRange.interval };
+        } else {
+          // Validate the interval is valid for current range
+          const validIntervals = VALID_INTERVALS_FOR_RANGE[currentRange.range] || [];
+          if (validIntervals.includes(selectedInterval)) {
+            customInterval = selectedInterval;
+            currentRange = { range: currentRange.range, interval: selectedInterval };
+          } else {
+            // Invalid combination, reset dropdown
+            e.target.value = '';
+            return;
+          }
+        }
+        if (lastTicker) {
+          await updateChartForTickerAndRange(lastTicker, currentRange.range, currentRange.interval);
+        }
       });
     } else {
       resultElem.textContent = data.error || 'No result found.';
