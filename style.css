@@ -325,3 +325,29 @@ button:hover {
 #stockInfoContainer {
   margin-top: 2rem;
 }
+
+/* Watchlist star button */
+.watch-star {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #fff;
+  margin-left: 12px;
+  vertical-align: middle;
+  padding: 0;
+  min-width: 36px;
+  flex-shrink: 0;
+}
+.watch-star:hover {
+  background: #f9f9f9;
+  border-color: #999;
+}
+.watch-star svg { width: 18px; height: 18px; display: block; }
+.watch-star.filled svg path { fill: #f59e0b; stroke: none; }
+.watch-star:not(.filled) svg path { fill: none; stroke: #666; stroke-width: 1.5; }
+.watch-star:focus { outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
