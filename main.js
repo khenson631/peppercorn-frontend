@@ -1,6 +1,60 @@
 // Use local backend for testing (change back to production for deployment)
-// const API_BASE_URL = 'http://localhost:5000'; // Local backend for testing
-const API_BASE_URL = 'https://peppercorn-backend.onrender.com';  // Production backend
+const API_BASE_URL = 'http://localhost:5000'; // Local backend for testing
+// const API_BASE_URL = 'https://peppercorn-backend.onrender.com';  // Production backend
+
+// --- Watchlist / anonymous id helpers (PoC using backend JSON store) ---
+function ensureAnonId() {
+  try {
+    let id = localStorage.getItem('peppercornAnonId');
+    if (!id) {
+      id = 'anon-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
+      localStorage.setItem('peppercornAnonId', id);
+    }
+    return id;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function fetchWatchlistForAnon(anonId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/watchlist?anonId=${encodeURIComponent(anonId)}`);
+    if (!res.ok) throw new Error('failed');
+    const json = await res.json();
+    return Array.isArray(json.symbols) ? json.symbols : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+async function addTickerToWatchlist(anonId, ticker) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/watchlist`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-anon-id': anonId },
+      body: JSON.stringify({ ticker })
+    });
+    if (!res.ok) throw new Error('add failed');
+    const json = await res.json();
+    return Array.isArray(json.symbols) ? json.symbols : null;
+  } catch (err) {
+    console.error('Add watchlist error', err);
+    return null;
+  }
+}
+
+async function removeTickerFromWatchlist(anonId, ticker) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/watchlist/${encodeURIComponent(ticker)}`, {
+      method: 'DELETE', headers: { 'x-anon-id': anonId }
+    });
+    if (!res.ok) throw new Error('delete failed');
+    const json = await res.json();
+    return Array.isArray(json.symbols) ? json.symbols : null;
+  } catch (err) {
+    console.error('Remove watchlist error', err);
+    return null;
+  }
+}
 
 // --- Autocomplete for ticker input ---
 const tickerInput = document.getElementById('ticker');
@@ -321,13 +375,13 @@ async function performStockSearch() {
       resultElem.innerHTML = `
         <div style="border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 0 0 1px #ddd; line-height:1.2">
           <div style="padding: 15px; background: #f9f9f9;">
-            <div id="tickerHeader" style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em;">
-            <strong>${data.companyName}</strong> (${data.ticker})
+            <div id="tickerHeader" style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div><strong>${data.companyName}</strong> (${data.ticker})
             <br>
             <span style="font-size:.85em">$${data.currentPrice?.toFixed(2)}</span> <span style="font-size: 0.7em; color: ${changeColor};">${changeSymbol}${data.dailyChange?.toFixed(2) || 'N/A'} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || 'N/A'}%)</span>            
             <br>
-            <span style="font-size:.44em">${getMarketTimeDisplay()}</span>
-          </div>
+            <span style="font-size:.44em">${getMarketTimeDisplay()}</span></div>
+            </div>
           
           <!--Stock Chart -->
             <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
@@ -412,7 +466,44 @@ async function performStockSearch() {
           </div>
         </div>
       `;
-      // Fetch and render chart for current range
+      
+      // Render watch/star button and fetch+render chart for current range
+      // Add small delay to ensure DOM is ready after innerHTML
+      setTimeout(async () => {
+        try {
+          const anonId = ensureAnonId();
+          const currentList = anonId ? await fetchWatchlistForAnon(anonId) : [];
+          const isWatched = currentList.includes(ticker.toUpperCase());
+          const header = document.getElementById('tickerHeader');
+          if (header) {
+            const btn = document.createElement('button');
+            btn.className = 'watch-star' + (isWatched ? ' filled' : '');
+            btn.setAttribute('aria-label', 'Toggle watchlist');
+            btn.innerHTML = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .587l3.668 7.431L23 9.748l-5.5 5.362L18.335 24 12 20.013 5.665 24 6.5 15.11 1 9.748l7.332-1.73L12 .587z"/></svg>`;
+            btn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              // optimistic toggle
+              const currently = btn.classList.contains('filled');
+              if (currently) {
+                btn.classList.remove('filled');
+                const removed = await removeTickerFromWatchlist(anonId, ticker);
+                if (removed === null) btn.classList.add('filled');
+              } else {
+                btn.classList.add('filled');
+                const added = await addTickerToWatchlist(anonId, ticker);
+                if (added === null) btn.classList.remove('filled');
+              }
+            });
+            header.appendChild(btn);
+            console.log('watchlist star button added');
+          } else {
+            console.error('tickerHeader not found');
+          }
+        } catch (err) {
+          console.error('watchlist render error', err);
+        }
+      }, 0);
+
       await updateChartForTickerAndRange(ticker, currentRange.range, currentRange.interval);
       showRangeLabels();
       // Attach event listener for range selector (since it's now dynamic)
