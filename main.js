@@ -373,8 +373,6 @@ async function performStockSearch() {
       resultElem.style.display = 'block';
       // Inject result, range selector, and chart container
       resultElem.innerHTML = `
-        <div style="border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 0 0 1px #ddd; line-height:1.2">
-          <div style="padding: 15px; background: #f9f9f9;">
             <div id="tickerHeader" style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
             <div><strong>${data.companyName}</strong> (${data.ticker})
             <br>
