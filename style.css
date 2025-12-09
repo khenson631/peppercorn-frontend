@@ -12,13 +12,21 @@ body {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  padding: 2rem;
+  padding: 0;
 }
 
 #resultContainer {
   min-height: 100%;
   border: none;
-  /* min-width: fit-content; */
+  padding: 3rem;
+}
+
+/* Sticky header wrapper */
+.sticky-header-wrapper {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 100;
 }
 
 /* Header Container */
@@ -26,16 +34,14 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2rem 2rem 2rem;
-  margin-bottom: 2rem;
+  padding: 1rem 2rem 1rem 2rem;
+  margin-bottom: 0;
   gap: 2rem;
   flex-wrap: wrap;
   flex-direction: row;
-  margin-bottom: auto;
-  position: sticky;
-  top: 0;
-  background: #fff;
-  z-index: 100;
+  position: static;
+  background: #e8e7e7;
+  z-index: auto;
 }
 
 #headerImg {
@@ -220,6 +226,7 @@ button:hover {
 .search-icon {
   flex-shrink: 0;
   margin-right: 12px;
+  margin-left: auto;
   color: #888;
   width: 22px;
   height: 22px;
@@ -227,6 +234,7 @@ button:hover {
   transition: background 0.15s, box-shadow 0.15s;
   border-radius: 50%;
 }
+
 .search-icon:focus, .search-icon:hover {
   background: #f0f0f0;
   box-shadow: 0 0 0 2px #b3d4fc;
@@ -357,7 +365,11 @@ button:hover {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-left: 12px;
+  padding: 1rem 2rem 1rem 2rem;
+  margin-bottom: 0;
+  background-color: #e3effe;
+  position: relative;
+  z-index: 1;
 }
 .tab-btn {
   background: transparent;
