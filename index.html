@@ -12,16 +12,19 @@
     <!-- Add TradingView Lightweight Charts CDN -->
     <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
     
-    <div class="header-container">
-      <img src="assets/graph (1).png" alt="image of stock chart" id="headerImg"><h1>BuyOrSell</h1>
-      <div class="search-bar">
-        <svg class="search-icon" width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="9" cy="9" r="7" stroke="#888" stroke-width="2"/>
-          <line x1="14.2" y1="14.2" x2="18" y2="18" stroke="#888" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <input id="ticker" type="text" placeholder="Enter symbol or name" autocomplete="off" />
-        <div id="tickerSuggestions" class="suggestions-list"></div>
+    <div class="sticky-header-wrapper">
+      <div class="header-container">
+        <img src="assets/graph (1).png" alt="image of stock chart" id="headerImg"><h1>BuyOrSell</h1>
+        <div class="search-bar">
+          <input id="ticker" type="text" placeholder="Enter symbol or name" autocomplete="off" />
+          <svg class="search-icon" width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="9" cy="9" r="7" stroke="#888" stroke-width="2"/>
+            <line x1="14.2" y1="14.2" x2="18" y2="18" stroke="#888" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <div id="tickerSuggestions" class="suggestions-list"></div>
+        </div>
       </div>
+      
       <div class="subnav" aria-label="secondary navigation">
         <button id="watchlistTab" class="tab-btn" type="button">Watchlist</button>
       </div>
