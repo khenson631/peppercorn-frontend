@@ -22,10 +22,14 @@
         <input id="ticker" type="text" placeholder="Enter symbol or name" autocomplete="off" />
         <div id="tickerSuggestions" class="suggestions-list"></div>
       </div>
+      <div class="subnav" aria-label="secondary navigation">
+        <button id="watchlistTab" class="tab-btn" type="button">Watchlist</button>
+      </div>
     </div>
 
     <section id="resultContainer">  
       <div id="stockResult"></div>
+      <div id="watchlistContainer" style="display:none;"></div>
         <!-- Chart and range selector will be injected dynamically -->
     </section>
   </div>

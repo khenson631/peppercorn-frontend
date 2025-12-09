@@ -342,6 +342,8 @@ async function updateChartForTickerAndRange(ticker, range, interval) {
 async function performStockSearch() {
   const ticker = document.getElementById('ticker').value;
  
+  // Ensure watchlist view is hidden when performing a normal stock search
+  try { hideWatchlist(); } catch (e) { /* ignore if not initialized yet */ }
   resultElem.style.display = 'block';
   
   // Show message on first search about server wake-up time
@@ -587,3 +589,134 @@ async function fetchProfileData(ticker) {
     return null;
   }
 }
+
+// --- Watchlist UI: fetch, render, and interactions (modular & reusable) ---
+
+function createElementFromHTML(html) {
+  const template = document.createElement('template');
+  template.innerHTML = html.trim();
+  return template.content.firstChild;
+}
+
+async function fetchWatchlistWithScores(anonId) {
+  // Returns array of { ticker, companyName, currentPrice, dailyChange, dailyChangePercent }
+  try {
+    const symbols = await fetchWatchlistForAnon(anonId);
+    if (!Array.isArray(symbols) || symbols.length === 0) return [];
+
+    const fetchScore = async (sym) => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/score/${encodeURIComponent(sym)}`);
+        if (!res.ok) throw new Error('score fetch failed');
+        const json = await res.json();
+        return {
+          ticker: (json.ticker || sym).toUpperCase(),
+          companyName: json.companyName || json.companyName || (json.label ? json.label : sym),
+          currentPrice: typeof json.currentPrice === 'number' ? json.currentPrice : null,
+          dailyChange: typeof json.dailyChange === 'number' ? json.dailyChange : null,
+          dailyChangePercent: typeof json.dailyChangePercent === 'number' ? json.dailyChangePercent : null
+        };
+      } catch (err) {
+        return { ticker: String(sym).toUpperCase(), companyName: sym, currentPrice: null, dailyChange: null, dailyChangePercent: null };
+      }
+    };
+
+    const promises = symbols.map(s => fetchScore(s));
+    const results = await Promise.all(promises);
+    // Sort alphabetically by ticker
+    results.sort((a,b) => a.ticker.localeCompare(b.ticker));
+    return results;
+  } catch (err) {
+    console.error('Error fetching watchlist with scores', err);
+    return [];
+  }
+}
+
+function formatNumber(n) {
+  if (n === null || n === undefined) return '—';
+  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function renderWatchlistRows(items) {
+  if (!Array.isArray(items) || items.length === 0) return '<div class="watch-empty">No tickers in your Watchlist. Star a ticker to add it.</div>';
+
+  const rows = items.map(item => {
+    const sign = item.dailyChange > 0 ? '+' : '';
+    const changeClass = item.dailyChange > 0 ? 'pos' : (item.dailyChange < 0 ? 'neg' : 'neutral');
+    return `
+      <div class="watch-row" data-ticker="${item.ticker}">
+        <div class="col ticker"><strong>${item.ticker}</strong></div>
+        <div class="col name">${item.companyName || ''}</div>
+        <div class="col price">${item.currentPrice !== null ? formatNumber(item.currentPrice) : '—'}</div>
+        <div class="col change ${changeClass}">${item.dailyChange !== null ? sign + formatNumber(item.dailyChange) : '—'}</div>
+        <div class="col changePct ${changeClass}">${item.dailyChangePercent !== null ? sign + (item.dailyChangePercent).toFixed(2) + '%' : '—'}</div>
+        <div class="col action"><button class="row-star" aria-label="Remove from watchlist">✕</button></div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="watchlist-table">
+      <div class="watch-header">
+        <div class="col ticker">Ticker</div>
+        <div class="col name">Name</div>
+        <div class="col price">Price</div>
+        <div class="col change">$ Change</div>
+        <div class="col changePct">% Change</div>
+        <div class="col action"></div>
+      </div>
+      <div class="watch-rows">${rows}</div>
+    </div>`;
+}
+
+async function refreshWatchlistView() {
+  const container = document.getElementById('watchlistContainer');
+  if (!container) return;
+  container.innerHTML = '<div class="watch-loading">Loading watchlist…</div>';
+  const anonId = ensureAnonId();
+  const data = anonId ? await fetchWatchlistWithScores(anonId) : [];
+  container.innerHTML = renderWatchlistRows(data);
+
+  // attach row star handlers
+  container.querySelectorAll('.row-star').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const row = e.target.closest('.watch-row');
+      if (!row) return;
+      const ticker = row.dataset.ticker;
+      const anonIdLocal = ensureAnonId();
+      // optimistic remove
+      row.style.opacity = '0.5';
+      const updated = await removeTickerFromWatchlist(anonIdLocal, ticker);
+      if (updated === null) {
+        row.style.opacity = '1';
+        alert('Failed to remove from watchlist');
+      } else {
+        await refreshWatchlistView();
+      }
+    });
+  });
+}
+
+function showWatchlist() {
+  const result = document.getElementById('stockResult');
+  const watch = document.getElementById('watchlistContainer');
+  if (result) result.style.display = 'none';
+  if (watch) watch.style.display = 'block';
+  document.getElementById('watchlistTab')?.classList.add('active');
+}
+
+function hideWatchlist() {
+  const watch = document.getElementById('watchlistContainer');
+  if (watch) watch.style.display = 'none';
+  document.getElementById('watchlistTab')?.classList.remove('active');
+}
+
+document.getElementById('watchlistTab')?.addEventListener('click', async (e) => {
+  const tab = e.currentTarget;
+  const isActive = tab.classList.contains('active');
+  if (isActive) {
+    hideWatchlist();
+    return;
+  }
+  showWatchlist();
+  await refreshWatchlistView();
+});
