@@ -7,7 +7,7 @@ body {
 
 .container {
   min-width: fit-content;
-  min-height: 90vh;
+  min-height: 100vh;
   margin: 0;
   background: #fff;
   border-radius: 8px;
@@ -19,6 +19,7 @@ body {
   min-height: 100%;
   border: none;
   padding: 3rem;
+  margin-bottom: 0;
 }
 
 /* Sticky header wrapper */
