@@ -750,6 +750,9 @@ async function refreshWatchlistView() {
   const data = anonId ? await fetchWatchlistWithScores(anonId) : [];
   container.innerHTML = renderWatchlistRows(data);
 
+  // Re-attach ticker search listener after rendering new rows
+  searchStockFromWaitlist();
+
   // attach row star handlers
   container.querySelectorAll(".row-star").forEach((btn) => {
     btn.addEventListener("click", async (e) => {
