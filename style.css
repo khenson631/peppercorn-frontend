@@ -396,6 +396,7 @@ button:hover {
 .watch-row .action { text-align: center; }
 .watch-row .row-star { background: transparent; border: none; cursor: pointer; color: #999; font-size: 14px; }
 .watch-row .row-star:hover { color: #333; }
+.watch-row .ticker:hover { color: blue; cursor: pointer; }
 .watch-empty { padding: 20px; color: #666; text-align: center; }
 .watch-loading { padding: 20px; text-align: center; color: #666; }
 .pos { color: #16a34a; }
