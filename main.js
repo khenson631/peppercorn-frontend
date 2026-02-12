@@ -238,6 +238,66 @@ function showRangeLabels() {
 
 hideRangeLabels();
 
+// --- Market News (Home) ---
+async function fetchMarketNews(category = 'general', minId = 0) {
+  try {
+    const url = `${API_BASE_URL}/api/market-news?category=${encodeURIComponent(category)}` + (minId ? `&minId=${encodeURIComponent(minId)}` : '');
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed fetching market news');
+    const json = await res.json();
+    return Array.isArray(json) ? json : [];
+  } catch (err) {
+    console.error('fetchMarketNews error', err);
+    return [];
+  }
+}
+
+function renderMarketNews(news) {
+  resultElem.style.display = 'block';
+  if (!Array.isArray(news) || news.length === 0) {
+    resultElem.innerHTML = '<div style="padding:16px;color:#666;">No market news available.</div>';
+    return;
+  }
+
+  const items = news
+    .map((item) => {
+      const date = item.datetime ? new Date(item.datetime * 1000).toLocaleString() : '';
+      const related = Array.isArray(item.related) && item.related.length ? ` <span style="color:#888">(${item.related.join(', ')})</span>` : '';
+      const imageUrl = item.image || '';
+      const imageHtml = imageUrl
+        ? `<div style="flex:0 0 140px;display:flex;align-items:center;justify-content:center;margin-right:12px;"><img src="${imageUrl}" alt="thumb" style="width:120px;height:80px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'"/></div>`
+        : '<div style="flex:0 0 140px;display:flex;align-items:center;justify-content:center;margin-right:12px;background:#f2f2f2;border-radius:6px;width:120px;height:80px;color:#999;font-size:12px;">No Image</div>';
+
+      return `
+        <div class="news-item" style="display:flex;gap:12px;padding:12px;border-bottom:1px solid #eee;align-items:flex-start;">
+          ${imageHtml}
+          <div style="flex:1;min-width:0;">
+            <a href="${item.url}" target="_blank" style="font-weight:bold;color:#1a0dab;text-decoration:none;display:block;">${item.headline}</a>
+            <div style="font-size:12px;color:#888;margin-top:4px;">${item.source} • ${date} ${related}</div>
+            <div style="margin-top:8px;color:#444;">${item.summary || ''}</div>
+          </div>
+        </div>`;
+    })
+    .join('');
+
+  resultElem.innerHTML = `<div style="padding:8px 0 0 0;"><h3 style="margin:0 0 8px 0;">Market News</h3>${items}</div>`;
+}
+
+async function showHome() {
+  try { hideWatchlist(); } catch (e) { /* ignore */ }
+  const news = await fetchMarketNews('general', 0);
+  renderMarketNews(news);
+}
+
+// Attach Home tab if present
+document.getElementById('homeTab')?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  await showHome();
+});
+
+// Load Market News on initial page load
+showHome();
+
 async function fetchHistoricalData(ticker, range = "6mo", interval = "1d") {
   try {
     const res = await fetch(
