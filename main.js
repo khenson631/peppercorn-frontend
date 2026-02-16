@@ -513,7 +513,6 @@ async function performStockSearch(ticker) {
                   <div style="display: inline;"><strong>Revenue Per Share TTM:</strong> ${data.basicFinancials.revenuePerShareTTM}</div>
                   <div style="display: inline;"><strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}</div>
                   <div style="display: inline;"><strong>Current Ratio:</strong> ${data.basicFinancials.currentRatioAnnual}</div>                        
-                  <div style="display: inline;"><strong>Debt to Equity:</strong> ${data.basicFinancials.totalDebtToEquity}</div>
                   <div style="display: inline;"><strong>Price to Earnings:</strong> ${data.basicFinancials.priceToEarnings}</div>
                 </div>
                 <div id="basicFinancialsRightSide" style="display:flex; flex-direction: column; flex: 1;">
@@ -524,6 +523,71 @@ async function performStockSearch(ticker) {
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Insider Sentiment - Full Width Below -->
+          <h3 class="sectionHeader">Insider Sentiment</h3>
+          <div id="insiderSentimentSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
+            ${
+              data.insiderSentiment && data.insiderSentiment.data && data.insiderSentiment.data.length > 0
+                ? `
+                  <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                    ${data.insiderSentiment.data.map(item => `
+                      <div style="padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px; flex: 1; min-width: 150px;">
+                        <div><strong>${new Date(item.date * 1000).toLocaleDateString()}</strong></div>
+                        <div style="margin-top: 4px;">
+                          <span style="color: #27ae60;"><strong>Buys:</strong> ${item.buy || 0}</span> | 
+                          <span style="color: #e74c3c;"><strong>Sells:</strong> ${item.sell || 0}</span>
+                        </div>
+                        <div style="margin-top: 4px; font-size: 12px; color: #888;">
+                          <strong>MSPR:</strong> ${item.mspr ? item.mspr.toFixed(2) : 'N/A'}
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                `
+                : '<div style="color: #999;">No insider sentiment data available.</div>'
+            }
+          </div>
+
+          <!-- Insider Transactions - Full Width Below -->
+          <h3 class="sectionHeader">Recent Insider Transactions</h3>
+          <div id="insiderTransactionsSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
+            ${
+              data.insiderTransactions && data.insiderTransactions.data && data.insiderTransactions.data.length > 0
+                ? `
+                  <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                      <thead>
+                        <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+                          <th style="padding: 8px; text-align: left; font-weight: bold;">Name</th>
+                          <th style="padding: 8px; text-align: center; font-weight: bold;">Shares After Transaction</th>
+                          <th style="padding: 8px; text-align: center; font-weight: bold;">Price</th>
+                          <th style="padding: 8px; text-align: center; font-weight: bold;">Change in Shares</th>
+                          <th style="padding: 8px; text-align: center; font-weight: bold;">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${data.insiderTransactions.data.slice(0, 100).map(tx => {
+                          const shareChange = tx.change || 0;
+                          const shareChangeColor = shareChange > 0 ? '#27ae60' : shareChange < 0 ? '#e74c3c' : '#666';
+                          const shareChangeSymbol = shareChange > 0 ? '+' : '';
+                          return `
+                            <tr style="border-bottom: 1px solid #eee;">
+                              <td style="padding: 8px;">${tx.name || 'N/A'}</td>
+                              <td style="padding: 8px; text-align: center;">${(tx.share || 0).toLocaleString()}</td>
+                              <td style="padding: 8px; text-align: center;">$${(tx.transactionPrice || 0).toFixed(2)}</td>
+                              <td style="padding: 8px; text-align: center; color: ${shareChangeColor};"><strong>${shareChangeSymbol}${shareChange.toFixed(2)}</strong></td>
+                              <td style="padding: 8px; text-align: center;">${tx.transactionDate ? new Date(tx.transactionDate).toLocaleDateString() : 'N/A'}</td>
+                            </tr>
+                          `;
+                        }).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                `
+                : '<div style="color: #999;">No insider transactions data available.</div>'
+            }
           </div>
           
           <!-- Latest News - Full Width Below -->
