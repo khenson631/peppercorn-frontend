@@ -528,22 +528,27 @@ async function performStockSearch(ticker) {
           <!-- Insider Sentiment - Full Width Below -->
           <h3 class="sectionHeader">Insider Sentiment</h3>
           <div id="insiderSentimentSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
+            <p>The Insider Buy/Sell Ratio for the USA's overall market quantifies the transactions of insider purchases to sales by corporate insiders. It is calculated by dividing the number of purchase transactions by the number of sale transactions conducted by insiders. This ratio serves as a barometer of insiders' confidence in the market, with a higher ratio indicating optimism and a lower ratio suggesting potential pessimism about future market conditions. (Monthly data, but only months with insider activity are displayed.)</p>
             ${
               data.insiderSentiment && data.insiderSentiment.data && data.insiderSentiment.data.length > 0
                 ? `
                   <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                    ${data.insiderSentiment.data.map(item => `
-                      <div style="padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px; flex: 1; min-width: 150px;">
-                        <div><strong>${new Date(item.date * 1000).toLocaleDateString()}</strong></div>
-                        <div style="margin-top: 4px;">
-                          <span style="color: #27ae60;"><strong>Buys:</strong> ${item.buy || 0}</span> | 
-                          <span style="color: #e74c3c;"><strong>Sells:</strong> ${item.sell || 0}</span>
+                    ${data.insiderSentiment.data.slice().reverse().map(item => {
+                      const monthYear = new Date(item.year, item.month - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                      const changeColor = item.change > 0 ? '#27ae60' : item.change < 0 ? '#e74c3c' : '#666';
+                      const changeSymbol = item.change > 0 ? '+' : '';
+                      return `
+                        <div style="padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px; flex: 1; min-width: 150px;">
+                          <div><strong>${monthYear}</strong></div>
+                          <div style="margin-top: 4px; color: ${changeColor};">
+                            <strong>Net Change:</strong> ${changeSymbol}${item.change.toLocaleString()}
+                          </div>
+                          <div style="margin-top: 4px; font-size: 12px; color: #888;">
+                            <strong>MSPR:</strong> ${item.mspr ? item.mspr.toFixed(2) : 'N/A'}
+                          </div>
                         </div>
-                        <div style="margin-top: 4px; font-size: 12px; color: #888;">
-                          <strong>MSPR:</strong> ${item.mspr ? item.mspr.toFixed(2) : 'N/A'}
-                        </div>
-                      </div>
-                    `).join('')}
+                      `;
+                    }).join('')}
                   </div>
                 `
                 : '<div style="color: #999;">No insider sentiment data available.</div>'
