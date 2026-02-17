@@ -187,6 +187,7 @@ const VALID_INTERVALS_FOR_RANGE = {
   "1y": ["1h", "1d", "1wk"],
   "2y": ["1h", "1d", "1wk"],
   "5y": ["1d", "1wk", "1mo"],
+  "10y": ["1d", "1wk", "1mo"],
   max: ["1mo"],
 };
 
@@ -323,6 +324,7 @@ function getRangeSelectorHTML() {
       <span class="range-label" data-range="1y" data-interval="1d">1Y</span>
       <span class="range-label" data-range="2y" data-interval="1d">2Y</span>
       <span class="range-label" data-range="5y" data-interval="1wk">5Y</span>
+      <span class="range-label" data-range="10y" data-interval="1wk">10Y</span>
       <span class="range-label" data-range="max" data-interval="1mo">MAX</span>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
