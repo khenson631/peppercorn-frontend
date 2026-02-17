@@ -366,6 +366,8 @@ function renderStockChart(ohlcData) {
 
   chartDiv.style.display = "block";
   chartDiv.innerHTML = "";
+  
+
   chart = LightweightCharts.createChart(chartDiv, {
     width: chartDiv.offsetWidth,
     height: 350,
@@ -373,8 +375,15 @@ function renderStockChart(ohlcData) {
     grid: { vertLines: { color: "#eee" }, horzLines: { color: "#eee" } },
     timeScale: { timeVisible: true, secondsVisible: false },
   });
-  candleSeries = chart.addCandlestickSeries();
-  candleSeries.setData(ohlcData);
+
+  candleSeries = chart.addSeries(LightweightCharts.AreaSeries);
+  // Area series expects { time, value }
+  const areaData = ohlcData
+    .filter((bar) => typeof bar.close === "number" && !isNaN(bar.close))
+    .map((bar) => ({ time: bar.time, value: bar.close }));
+
+candleSeries.setData(areaData);
+  candleSeries.setData(areaData);
   chart.timeScale().fitContent();
 }
 
@@ -417,8 +426,22 @@ function updateIntervalDropdownOptions(range) {
 async function updateChartForTickerAndRange(ticker, range, interval) {
   setActiveRangeLabel(range, interval);
   const ohlcData = await fetchHistoricalData(ticker, range, interval);
+  // console.log(ohlcData);
   renderStockChart(ohlcData);
 }
+
+// window.addEventListener('resize', function() {
+//   // Resize chart when window is resized
+//   const chartContainer = document.getElementById("chartContainer");
+//   if (chartContainer && chart) {
+//     // chartContainer.resize(chartDiv.offsetWidth, 350);
+//     console.log("resize chart container");
+//     chartContainer.width = "100%";
+//   }
+//   // Optionally, update chartDiv width if needed
+//   // chartDiv.style.width = "100%";
+// });
+
 
 // --- Stock Search Logic ---
 async function performStockSearch(ticker) {
@@ -470,7 +493,7 @@ async function performStockSearch(ticker) {
             </div>
           
           <!--Stock Chart -->
-            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;" id="chartContainer">
               ${getRangeSelectorHTML()}
               ${getChartContainerHTML()}
             </div>
