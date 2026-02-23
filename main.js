@@ -240,31 +240,39 @@ function showRangeLabels() {
 hideRangeLabels();
 
 // --- Market News (Home) ---
-async function fetchMarketNews(category = 'general', minId = 0) {
+async function fetchMarketNews(category = "general", minId = 0) {
   try {
-    const url = `${API_BASE_URL}/api/market-news?category=${encodeURIComponent(category)}` + (minId ? `&minId=${encodeURIComponent(minId)}` : '');
+    const url =
+      `${API_BASE_URL}/api/market-news?category=${encodeURIComponent(category)}` +
+      (minId ? `&minId=${encodeURIComponent(minId)}` : "");
     const res = await fetch(url);
-    if (!res.ok) throw new Error('Failed fetching market news');
+    if (!res.ok) throw new Error("Failed fetching market news");
     const json = await res.json();
     return Array.isArray(json) ? json : [];
   } catch (err) {
-    console.error('fetchMarketNews error', err);
+    console.error("fetchMarketNews error", err);
     return [];
   }
 }
 
 function renderMarketNews(news) {
-  resultElem.style.display = 'block';
+  resultElem.style.display = "block";
   if (!Array.isArray(news) || news.length === 0) {
-    resultElem.innerHTML = '<div style="padding:16px;color:#666;">No market news available.</div>';
+    resultElem.innerHTML +=
+      '<div style="padding:16px;color:#666;">No market news available.</div>';
     return;
   }
 
   const items = news
     .map((item) => {
-      const date = item.datetime ? new Date(item.datetime * 1000).toLocaleString() : '';
-      const related = Array.isArray(item.related) && item.related.length ? ` <span style="color:#888">(${item.related.join(', ')})</span>` : '';
-      const imageUrl = item.image || '';
+      const date = item.datetime
+        ? new Date(item.datetime * 1000).toLocaleString()
+        : "";
+      const related =
+        Array.isArray(item.related) && item.related.length
+          ? ` <span style="color:#888">(${item.related.join(", ")})</span>`
+          : "";
+      const imageUrl = item.image || "";
       const imageHtml = imageUrl
         ? `<div style="flex:0 0 140px;display:flex;align-items:center;justify-content:center;margin-right:12px;"><img src="${imageUrl}" alt="thumb" style="width:120px;height:80px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'"/></div>`
         : '<div style="flex:0 0 140px;display:flex;align-items:center;justify-content:center;margin-right:12px;background:#f2f2f2;border-radius:6px;width:120px;height:80px;color:#999;font-size:12px;">No Image</div>';
@@ -275,23 +283,67 @@ function renderMarketNews(news) {
           <div style="flex:1;min-width:0;">
             <a href="${item.url}" target="_blank" style="font-weight:bold;color:#1a0dab;text-decoration:none;display:block;">${item.headline}</a>
             <div style="font-size:12px;color:#888;margin-top:4px;">${item.source} • ${date} ${related}</div>
-            <div style="margin-top:8px;color:#444;">${item.summary || ''}</div>
+            <div style="margin-top:8px;color:#444;">${item.summary || ""}</div>
           </div>
         </div>`;
     })
-    .join('');
+    .join("");
 
-  resultElem.innerHTML = `<div style="padding:8px 0 0 0;"><h3 style="margin:0 0 8px 0;">Market News</h3>${items}</div>`;
+  resultElem.innerHTML += `<div style="padding:8px 0 0 0;"><h3 style="margin:0 0 8px 0;">Market News</h3>${items}</div>`;
 }
 
 async function showHome() {
-  try { hideWatchlist(); } catch (e) { /* ignore */ }
-  const news = await fetchMarketNews('general', 0);
+  try {
+    hideWatchlist();
+  } catch (e) {
+    /* ignore */
+  }
+
+  // Fetch and display market status at the top
+  let statusText = "";
+  let holidayText = null;
+  try {
+    const exch = "US";
+    const statusArr = await fetchMarketStatus(exch);
+    let statusObj =
+      Array.isArray(statusArr) && statusArr.length ? statusArr[0] : null;
+
+    if (statusObj && typeof statusObj.isOpen !== "undefined") {
+      // console.log("format statusText");            
+
+      let holiday = statusObj.holiday;
+      
+      if (holiday) {
+        holidayText = `Holiday: ${holiday}`;
+      }
+
+      const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+      let date = new Date(statusObj.t * 1000);
+      const formattedDate = date.toLocaleDateString(undefined,dateOptions);
+
+      statusText = `<div style="padding:8px 0 0 0;font-size:1.1em;font-weight:bold;color:#333;">${exch} exchange is <span style="color:${statusObj.isOpen ? "#27ae60" : "#e74c3c"}">${statusObj.isOpen ? "OPEN" : "CLOSED"}</span> | Session: <span style="color:#555;">${statusObj.session || ""}</span> | <span style="color:#555;">${formattedDate || ""}</span></div>`;
+
+    }
+  } catch (err) {
+    statusText = "";
+  }
+
+  const news = await fetchMarketNews("general", 0);
+
+  // Render status at the top, then news
+  resultElem.innerHTML += statusText;
+
+  if (holidayText) {
+    resultElem.innerHTML += holidayText;
+  }
+
+  resultElem.innerHTML += "<br>";
+
   renderMarketNews(news);
 }
 
 // Attach Home tab if present
-document.getElementById('homeTab')?.addEventListener('click', async (e) => {
+document.getElementById("homeTab")?.addEventListener("click", async (e) => {
   e.preventDefault();
   await showHome();
 });
@@ -366,7 +418,6 @@ function renderStockChart(ohlcData) {
 
   chartDiv.style.display = "block";
   chartDiv.innerHTML = "";
-  
 
   chart = LightweightCharts.createChart(chartDiv, {
     width: chartDiv.offsetWidth,
@@ -382,7 +433,7 @@ function renderStockChart(ohlcData) {
     .filter((bar) => typeof bar.close === "number" && !isNaN(bar.close))
     .map((bar) => ({ time: bar.time, value: bar.close }));
 
-candleSeries.setData(areaData);
+  candleSeries.setData(areaData);
   candleSeries.setData(areaData);
   chart.timeScale().fitContent();
 }
@@ -442,10 +493,8 @@ async function updateChartForTickerAndRange(ticker, range, interval) {
 //   // chartDiv.style.width = "100%";
 // });
 
-
 // --- Stock Search Logic ---
 async function performStockSearch(ticker) {
-
   //const ticker = document.getElementById("ticker").value;
 
   // Ensure watchlist view is hidden when performing a normal stock search
@@ -555,25 +604,42 @@ async function performStockSearch(ticker) {
           <div id="insiderSentimentSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
             <p>The Insider Buy/Sell Ratio for the USA's overall market quantifies the transactions of insider purchases to sales by corporate insiders. It is calculated by dividing the number of purchase transactions by the number of sale transactions conducted by insiders. This ratio serves as a barometer of insiders' confidence in the market, with a higher ratio indicating optimism and a lower ratio suggesting potential pessimism about future market conditions. (Monthly data, but only months with insider activity are displayed.)</p>
             ${
-              data.insiderSentiment && data.insiderSentiment.data && data.insiderSentiment.data.length > 0
+              data.insiderSentiment &&
+              data.insiderSentiment.data &&
+              data.insiderSentiment.data.length > 0
                 ? `
                   <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                    ${data.insiderSentiment.data.slice().reverse().map(item => {
-                      const monthYear = new Date(item.year, item.month - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                      const changeColor = item.change > 0 ? '#27ae60' : item.change < 0 ? '#e74c3c' : '#666';
-                      const changeSymbol = item.change > 0 ? '+' : '';
-                      return `
+                    ${data.insiderSentiment.data
+                      .slice()
+                      .reverse()
+                      .map((item) => {
+                        const monthYear = new Date(
+                          item.year,
+                          item.month - 1,
+                        ).toLocaleDateString("en-US", {
+                          month: "short",
+                          year: "numeric",
+                        });
+                        const changeColor =
+                          item.change > 0
+                            ? "#27ae60"
+                            : item.change < 0
+                              ? "#e74c3c"
+                              : "#666";
+                        const changeSymbol = item.change > 0 ? "+" : "";
+                        return `
                         <div style="padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px; flex: 1; min-width: 150px;">
                           <div><strong>${monthYear}</strong></div>
                           <div style="margin-top: 4px; color: ${changeColor};">
                             <strong>Net Change:</strong> ${changeSymbol}${item.change.toLocaleString()}
                           </div>
                           <div style="margin-top: 4px; font-size: 12px; color: #888;">
-                            <strong>MSPR:</strong> ${item.mspr ? item.mspr.toFixed(2) : 'N/A'}
+                            <strong>MSPR:</strong> ${item.mspr ? item.mspr.toFixed(2) : "N/A"}
                           </div>
                         </div>
                       `;
-                    }).join('')}
+                      })
+                      .join("")}
                   </div>
                 `
                 : '<div style="color: #999;">No insider sentiment data available.</div>'
@@ -584,7 +650,9 @@ async function performStockSearch(ticker) {
           <h3 class="sectionHeader">Recent Insider Transactions</h3>
           <div id="insiderTransactionsSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
             ${
-              data.insiderTransactions && data.insiderTransactions.data && data.insiderTransactions.data.length > 0
+              data.insiderTransactions &&
+              data.insiderTransactions.data &&
+              data.insiderTransactions.data.length > 0
                 ? `
                   <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
@@ -598,20 +666,29 @@ async function performStockSearch(ticker) {
                         </tr>
                       </thead>
                       <tbody>
-                        ${data.insiderTransactions.data.slice(0, 100).map(tx => {
-                          const shareChange = tx.change || 0;
-                          const shareChangeColor = shareChange > 0 ? '#27ae60' : shareChange < 0 ? '#e74c3c' : '#666';
-                          const shareChangeSymbol = shareChange > 0 ? '+' : '';
-                          return `
+                        ${data.insiderTransactions.data
+                          .slice(0, 100)
+                          .map((tx) => {
+                            const shareChange = tx.change || 0;
+                            const shareChangeColor =
+                              shareChange > 0
+                                ? "#27ae60"
+                                : shareChange < 0
+                                  ? "#e74c3c"
+                                  : "#666";
+                            const shareChangeSymbol =
+                              shareChange > 0 ? "+" : "";
+                            return `
                             <tr style="border-bottom: 1px solid #eee;">
-                              <td style="padding: 8px;">${tx.name || 'N/A'}</td>
+                              <td style="padding: 8px;">${tx.name || "N/A"}</td>
                               <td style="padding: 8px; text-align: center;">${(tx.share || 0).toLocaleString()}</td>
                               <td style="padding: 8px; text-align: center;">$${(tx.transactionPrice || 0).toFixed(2)}</td>
                               <td style="padding: 8px; text-align: center; color: ${shareChangeColor};"><strong>${shareChangeSymbol}${shareChange.toFixed(2)}</strong></td>
-                              <td style="padding: 8px; text-align: center;">${tx.transactionDate ? new Date(tx.transactionDate).toLocaleDateString() : 'N/A'}</td>
+                              <td style="padding: 8px; text-align: center;">${tx.transactionDate ? new Date(tx.transactionDate).toLocaleDateString() : "N/A"}</td>
                             </tr>
                           `;
-                        }).join('')}
+                          })
+                          .join("")}
                       </tbody>
                     </table>
                   </div>
@@ -677,7 +754,6 @@ async function performStockSearch(ticker) {
               }
             });
             header.appendChild(btn);
-            console.log("watchlist star button added");
           } else {
             console.error("tickerHeader not found");
           }
@@ -957,13 +1033,30 @@ document
 
 // --- Trigger search on clicking ticker from waitlist ---
 function searchStockFromWaitlist() {
-  const watchTable = document.querySelector('.watchlist-table');
+  const watchTable = document.querySelector(".watchlist-table");
   if (!watchTable) return;
-  
+
   watchTable.addEventListener("click", function (e) {
     const ticker = e.target.closest(".col.ticker");
     if (!ticker) return;
-    
+
     performStockSearch(ticker.textContent.trim());
   });
+}
+
+// Fetch Market Status
+async function fetchMarketStatus(exchange) {
+  try {
+    const res = await fetch(
+      // `${API_BASE_URL}/api/marketStatus?exchange=${exchange}`,
+      `${API_BASE_URL}/api/marketStatus`,
+    );
+    const arr = await res.json();
+    if (!Array.isArray(arr) || !arr.length)
+      throw new Error("No Market Status Data");
+    // console.log(arr);
+    return arr;
+  } catch (err) {
+    return [];
+  }
 }
