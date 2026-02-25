@@ -246,7 +246,10 @@ async function fetchMarketNews(category = "general", minId = 0) {
       `${API_BASE_URL}/api/market-news?category=${encodeURIComponent(category)}` +
       (minId ? `&minId=${encodeURIComponent(minId)}` : "");
     const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed fetching market news");
+    if (!res.ok) {
+      throw new Error("Failed fetching market news")
+      
+    };
     const json = await res.json();
     return Array.isArray(json) ? json : [];
   } catch (err) {
@@ -293,6 +296,15 @@ function renderMarketNews(news) {
 }
 
 async function showHome() {
+  
+  // clear existing elements
+  try {
+    hideStockResult();
+  } catch(e) {
+    // ignore
+  }
+
+  
   try {
     hideWatchlist();
   } catch (e) {
@@ -322,13 +334,11 @@ async function showHome() {
       const formattedDate = date.toLocaleDateString(undefined,dateOptions);
 
       statusText = `<div style="padding:8px 0 0 0;font-size:1.1em;font-weight:bold;color:#333;">${exch} exchange is <span style="color:${statusObj.isOpen ? "#27ae60" : "#e74c3c"}">${statusObj.isOpen ? "OPEN" : "CLOSED"}</span> | Session: <span style="color:#555;">${statusObj.session || ""}</span> | <span style="color:#555;">${formattedDate || ""}</span></div>`;
-
     }
   } catch (err) {
     statusText = "";
+    console.log(err);
   }
-
-  const news = await fetchMarketNews("general", 0);
 
   // Render status at the top, then news
   resultElem.innerHTML += statusText;
@@ -338,14 +348,22 @@ async function showHome() {
   }
 
   resultElem.innerHTML += "<br>";
-
-  renderMarketNews(news);
+  
+  // Fetch and display market news
+  try{
+    let news = "";
+    news = await fetchMarketNews("general", 0);
+    renderMarketNews(news);
+  } catch(err) {
+    console.log(err);
+  }
 }
 
 // Attach Home tab if present
 document.getElementById("homeTab")?.addEventListener("click", async (e) => {
   e.preventDefault();
   await showHome();
+  // showHome();
 });
 
 // Load Market News on initial page load
@@ -1015,6 +1033,15 @@ function hideWatchlist() {
   const watch = document.getElementById("watchlistContainer");
   if (watch) watch.style.display = "none";
   document.getElementById("watchlistTab")?.classList.remove("active");
+}
+
+function hideStockResult() {
+  const stockResult = document.getElementById("stockResult");
+  const watch = document.getElementById("watchlistContainer");
+  if (stockResult) {
+    stockResult.style.display = "none";
+    stockResult.innerHTML = "";
+  }
 }
 
 document
