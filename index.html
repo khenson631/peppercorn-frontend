@@ -25,14 +25,16 @@
         </div>
       </div>
       
-      <div class="subnav" aria-label="secondary navigation">
+      <div class="subnav" id="subnav" aria-label="secondary navigation">
         <button id="homeTab" class="tab-btn" type="button">Home</button>
         <button id="watchlistTab" class="tab-btn" type="button">Watchlist</button>
       </div>
     </div>
 
     <section id="resultContainer">  
-      <div id="stockResult"></div>
+      <div id="stockResult">
+        <div id="stockNav"></div>
+      </div>
       <div id="watchlistContainer" style="display:none;"></div>
         <!-- Chart and range selector will be injected dynamically -->
     </section>

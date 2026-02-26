@@ -513,7 +513,6 @@ async function updateChartForTickerAndRange(ticker, range, interval) {
 
 // --- Stock Search Logic ---
 async function performStockSearch(ticker) {
-  //const ticker = document.getElementById("ticker").value;
 
   // Ensure watchlist view is hidden when performing a normal stock search
   try {
@@ -545,10 +544,14 @@ async function performStockSearch(ticker) {
     const data = await res.json();
     const profileData = await fetchProfileData(ticker);
 
+    formatStockNavBar();
+
     if (data.label && data.confidence) {
+      
       const changeColor = data.dailyChange >= 0 ? "green" : "red";
       const changeSymbol = data.dailyChange >= 0 ? "+" : "";
       resultElem.style.display = "block";
+      
       // Inject result, range selector, and chart container
       resultElem.innerHTML = `
             <div id="tickerHeader" style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
@@ -1039,7 +1042,8 @@ function hideStockResult() {
   const stockResult = document.getElementById("stockResult");
   if (stockResult) {
     stockResult.style.display = "none";
-    stockResult.innerHTML = "";
+    // stockResult.innerHTML = "";
+    stockResult.hidden = true;
   }
 }
 
@@ -1084,5 +1088,49 @@ async function fetchMarketStatus(exchange) {
     return arr;
   } catch (err) {
     return [];
+  }
+}
+
+// Format stockresult navbar
+function formatStockNavBar() {
+  
+  try {
+    const stockNavBar = document.getElementById("stockNavBar");
+
+    if (!stockNavBar) {
+       // const stockResult = document.getElementById("stockResult");
+      const container = document.getElementById("resultContainer");
+      const subnav = document.getElementById("subnav");
+      console.log(subnav);
+    
+      // const stockNavBar = document.getElementById("stockNav");
+      const stockNavBar = document.createElement("nav");
+      stockNavBar.id = "stockNavBar";
+
+      const tabs = [
+        { id: "summarBtn", label: "Summary" },
+        { id: "profileBtn", label: "Profile" },
+        { id: "newsBtn", label: "News" },
+        { id: "financialsBtn", label: "Financials" },
+        { id: "analysisBtn", label: "Analysis" }
+      ];
+
+      tabs.forEach(tab => {
+        const button = document.createElement("button");
+        button.id = tab.id;
+        button.className = "tab-btn";
+        button.type = "button";
+        button.textContent = tab.label;
+
+        stockNavBar.appendChild(button);
+      });
+
+      // container.appendChild(stockNavBar);
+      // subnav.appendChild(stockNavBar);
+      subnav.parentNode.insertBefore(stockNavBar, subnav.nextSibling);
+    }
+   
+  } catch (err) {
+    console.log(err);
   }
 }
