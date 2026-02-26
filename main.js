@@ -1037,7 +1037,6 @@ function hideWatchlist() {
 
 function hideStockResult() {
   const stockResult = document.getElementById("stockResult");
-  const watch = document.getElementById("watchlistContainer");
   if (stockResult) {
     stockResult.style.display = "none";
     stockResult.innerHTML = "";
