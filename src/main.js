@@ -546,6 +546,8 @@ async function performStockSearch(ticker) {
 
     formatStockNavBar();
 
+    formatStockNavBar();
+
     if (data.label && data.confidence) {
       
       const changeColor = data.dailyChange >= 0 ? "green" : "red";
@@ -1044,6 +1046,8 @@ function hideStockResult() {
     stockResult.style.display = "none";
     // stockResult.innerHTML = "";
     stockResult.hidden = true;
+    // stockResult.innerHTML = "";
+    stockResult.hidden = true;
   }
 }
 
@@ -1098,12 +1102,7 @@ function formatStockNavBar() {
     const stockNavBar = document.getElementById("stockNavBar");
 
     if (!stockNavBar) {
-       // const stockResult = document.getElementById("stockResult");
-      const container = document.getElementById("resultContainer");
       const subnav = document.getElementById("subnav");
-      console.log(subnav);
-    
-      // const stockNavBar = document.getElementById("stockNav");
       const stockNavBar = document.createElement("nav");
       stockNavBar.id = "stockNavBar";
 
@@ -1125,8 +1124,6 @@ function formatStockNavBar() {
         stockNavBar.appendChild(button);
       });
 
-      // container.appendChild(stockNavBar);
-      // subnav.appendChild(stockNavBar);
       subnav.parentNode.insertBefore(stockNavBar, subnav.nextSibling);
     }
    

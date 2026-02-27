@@ -5,7 +5,7 @@ Write-Host "Starting frontend server on http://localhost:8080..." -ForegroundCol
 Set-Location -Path $PSScriptRoot\..
 
 # Start http-server and open browser automatically
-npx http-server -p 8080 -o
+npx http-server ./src -p 8080 -o
 
 # Keep window open after server stops
 Write-Host "`nServer stopped. Press any key to exit..." -ForegroundColor Yellow

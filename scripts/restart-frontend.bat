@@ -12,7 +12,7 @@ timeout /t 2 /nobreak >nul
 
 echo Starting frontend server on http://localhost:8080...
 cd /d %~dp0..
-npx http-server -p 8080 -o
+npx http-server ./src -p 8080 -o
 
 pause
 
