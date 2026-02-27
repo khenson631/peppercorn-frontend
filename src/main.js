@@ -78,7 +78,7 @@ let debounceTimeout = null;
 let isFirstSearch = true;
 
 function clearSuggestions() {
-  suggestionsList.innerHTML = "";
+  suggestionsList.textContent = "";
   suggestionsList.style.display = "none";
   suggestions = [];
   activeIndex = -1;
@@ -304,7 +304,6 @@ async function showHome() {
     // ignore
   }
 
-  
   try {
     hideWatchlist();
   } catch (e) {
@@ -333,14 +332,16 @@ async function showHome() {
       let date = new Date(statusObj.t * 1000);
       const formattedDate = date.toLocaleDateString(undefined,dateOptions);
 
-      statusText = `<div style="padding:8px 0 0 0;font-size:1.1em;font-weight:bold;color:#333;">${exch} exchange is <span style="color:${statusObj.isOpen ? "#27ae60" : "#e74c3c"}">${statusObj.isOpen ? "OPEN" : "CLOSED"}</span> | Session: <span style="color:#555;">${statusObj.session || ""}</span> | <span style="color:#555;">${formattedDate || ""}</span></div>`;
+      statusText = `<div style="padding:8px 0 0 0;font-size:1.1em;font-weight:bold;color:#333;">${exch} 
+        exchange is <span style="color:${statusObj.isOpen ? "#27ae60" : "#e74c3c"}">${statusObj.isOpen ? "OPEN" : "CLOSED"}</span>
+         | Session: <span style="color:#555;">${statusObj.session || ""}</span> | <span style="color:#555;">${formattedDate || ""}</span></div>`;
+
     }
   } catch (err) {
     statusText = "";
     console.log(err);
   }
-
-  // Render status at the top, then news
+  
   resultElem.innerHTML += statusText;
 
   if (holidayText) {
@@ -1042,12 +1043,15 @@ function hideWatchlist() {
 
 function hideStockResult() {
   const stockResult = document.getElementById("stockResult");
+  const stockNav = document.getElementById("stockNavBar");
   if (stockResult) {
-    stockResult.style.display = "none";
-    // stockResult.innerHTML = "";
-    stockResult.hidden = true;
-    // stockResult.innerHTML = "";
-    stockResult.hidden = true;
+    stockResult.style.display = 'none';
+    stockResult.textContent = "";
+    // stockResult.hidden = true;
+  }
+
+  if (stockNav) {
+    stockNav.style.display = 'none';
   }
 }
 
