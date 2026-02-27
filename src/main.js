@@ -546,10 +546,14 @@ async function performStockSearch(ticker) {
 
     formatStockNavBar();
 
+    formatStockNavBar();
+
     if (data.label && data.confidence) {
+      
       const changeColor = data.dailyChange >= 0 ? "green" : "red";
       const changeSymbol = data.dailyChange >= 0 ? "+" : "";
       resultElem.style.display = "block";
+      
       // Inject result, range selector, and chart container
       resultElem.innerHTML = `
             <div id="tickerHeader" style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
@@ -1040,6 +1044,8 @@ function hideStockResult() {
   const stockResult = document.getElementById("stockResult");
   if (stockResult) {
     stockResult.style.display = "none";
+    // stockResult.innerHTML = "";
+    stockResult.hidden = true;
     // stockResult.innerHTML = "";
     stockResult.hidden = true;
   }
