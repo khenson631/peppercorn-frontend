@@ -1,3 +1,5 @@
+import { htmlToPlainText, isSafeUrl } from "./helpers.js";
+
 // Use local backend for testing (change back to production for deployment)
 const API_BASE_URL = "http://localhost:5000"; // Local backend for testing
 // const API_BASE_URL = 'https://peppercorn-backend.onrender.com';  // Production backend
@@ -89,14 +91,21 @@ function renderSuggestions() {
     clearSuggestions();
     return;
   }
-  suggestionsList.innerHTML = suggestions
-    .map(
-      (item, idx) =>
-        `<div class="suggestion-item${idx === activeIndex ? " active" : ""}" data-idx="${idx}">
-      <strong>${item.symbol}</strong> <span style="color:#888;">${item.name}</span>
-    </div>`,
-    )
-    .join("");
+  suggestionsList.replaceChildren();
+  suggestions.forEach((item, idx) => {
+    const div = document.createElement("div");
+    div.className = "suggestion-item" + (idx === activeIndex ? " active" : "");
+    div.dataset.idx = String(idx);
+    const strong = document.createElement("strong");
+    strong.textContent = item.symbol;
+    const span = document.createElement("span");
+    span.style.color = "#888";
+    span.textContent = item.name;
+    div.appendChild(strong);
+    div.appendChild(document.createTextNode(" "));
+    div.appendChild(span);
+    suggestionsList.appendChild(div);
+  });
   suggestionsList.style.display = "block";
 }
 
@@ -260,39 +269,74 @@ async function fetchMarketNews(category = "general", minId = 0) {
 
 function renderMarketNews(news) {
   resultElem.style.display = "block";
+  const wrapper = document.createElement("div");
+  wrapper.style.cssText = "padding:8px 0 0 0;";
+  const heading = document.createElement("h3");
+  heading.style.cssText = "margin:0 0 8px 0;";
+  heading.textContent = "Market News";
+  wrapper.appendChild(heading);
+
   if (!Array.isArray(news) || news.length === 0) {
-    resultElem.innerHTML +=
-      '<div style="padding:16px;color:#666;">No market news available.</div>';
+    const empty = document.createElement("div");
+    empty.style.cssText = "padding:16px;color:#666;";
+    empty.textContent = "No market news available.";
+    wrapper.appendChild(empty);
+    resultElem.appendChild(wrapper);
     return;
   }
 
-  const items = news
-    .map((item) => {
-      const date = item.datetime
-        ? new Date(item.datetime * 1000).toLocaleString()
-        : "";
-      const related =
-        Array.isArray(item.related) && item.related.length
-          ? ` <span style="color:#888">(${item.related.join(", ")})</span>`
-          : "";
-      const imageUrl = item.image || "";
-      const imageHtml = imageUrl
-        ? `<div style="flex:0 0 140px;display:flex;align-items:center;justify-content:center;margin-right:12px;"><img src="${imageUrl}" alt="thumb" style="width:120px;height:80px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'"/></div>`
-        : '<div style="flex:0 0 140px;display:flex;align-items:center;justify-content:center;margin-right:12px;background:#f2f2f2;border-radius:6px;width:120px;height:80px;color:#999;font-size:12px;">No Image</div>';
+  news.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "news-item";
+    row.style.cssText = "display:flex;gap:12px;padding:12px;border-bottom:1px solid #eee;align-items:flex-start;";
 
-      return `
-        <div class="news-item" style="display:flex;gap:12px;padding:12px;border-bottom:1px solid #eee;align-items:flex-start;">
-          ${imageHtml}
-          <div style="flex:1;min-width:0;">
-            <a href="${item.url}" target="_blank" style="font-weight:bold;color:#1a0dab;text-decoration:none;display:block;">${item.headline}</a>
-            <div style="font-size:12px;color:#888;margin-top:4px;">${item.source} • ${date} ${related}</div>
-            <div style="margin-top:8px;color:#444;">${item.summary || ""}</div>
-          </div>
-        </div>`;
-    })
-    .join("");
+    const imageWrap = document.createElement("div");
+    imageWrap.style.cssText = "flex:0 0 140px;display:flex;align-items:center;justify-content:center;margin-right:12px;";
+    if (item.image && isSafeUrl(item.image)) {
+      const img = document.createElement("img");
+      img.src = item.image.trim();
+      img.alt = "thumb";
+      img.style.cssText = "width:120px;height:80px;object-fit:cover;border-radius:6px;";
+      img.onerror = function () { this.style.display = "none"; };
+      imageWrap.appendChild(img);
+    } else {
+      imageWrap.style.background = "#f2f2f2";
+      imageWrap.style.borderRadius = "6px";
+      imageWrap.style.width = "120px";
+      imageWrap.style.height = "80px";
+      imageWrap.style.color = "#999";
+      imageWrap.style.fontSize = "12px";
+      imageWrap.textContent = "No Image";
+    }
+    row.appendChild(imageWrap);
 
-  resultElem.innerHTML += `<div style="padding:8px 0 0 0;"><h3 style="margin:0 0 8px 0;">Market News</h3>${items}</div>`;
+    const body = document.createElement("div");
+    body.style.cssText = "flex:1;min-width:0;";
+
+    const link = document.createElement("a");
+    link.target = "_blank";
+    link.style.cssText = "font-weight:bold;color:#1a0dab;text-decoration:none;display:block;";
+    link.textContent = item.headline || "";
+    if (item.url && isSafeUrl(item.url)) link.href = item.url.trim();
+    body.appendChild(link);
+
+    const date = item.datetime ? new Date(item.datetime * 1000).toLocaleString() : "";
+    const meta = document.createElement("div");
+    meta.style.cssText = "font-size:12px;color:#888;margin-top:4px;";
+    const related = Array.isArray(item.related) && item.related.length ? " (" + item.related.join(", ") + ")" : "";
+    meta.textContent = (item.source || "") + " • " + date + related;
+    body.appendChild(meta);
+
+    const summary = document.createElement("div");
+    summary.style.cssText = "margin-top:8px;color:#444;";
+    summary.textContent = htmlToPlainText(item.summary || "");
+    body.appendChild(summary);
+
+    row.appendChild(body);
+    wrapper.appendChild(row);
+  });
+
+  resultElem.appendChild(wrapper);
 }
 
 async function showHome() {
@@ -300,55 +344,57 @@ async function showHome() {
   // clear existing elements
   try {
     hideStockResult();
+    hideStockNav();
+    hideWatchlist();
   } catch(e) {
     // ignore
   }
 
-  try {
-    hideWatchlist();
-  } catch (e) {
-    /* ignore */
-  }
+  // try {
+  //   hideWatchlist();
+  // } catch (e) {
+  //   /* ignore */
+  // }
 
   // Fetch and display market status at the top
-  let statusText = "";
-  let holidayText = null;
   try {
     const exch = "US";
     const statusArr = await fetchMarketStatus(exch);
-    let statusObj =
+    const statusObj =
       Array.isArray(statusArr) && statusArr.length ? statusArr[0] : null;
 
     if (statusObj && typeof statusObj.isOpen !== "undefined") {
-      // console.log("format statusText");            
-
-      let holiday = statusObj.holiday;
-      
-      if (holiday) {
-        holidayText = `Holiday: ${holiday}`;
+      const statusDiv = document.createElement("div");
+      statusDiv.style.cssText = "padding:8px 0 0 0;font-size:1.1em;font-weight:bold;color:#333;";
+      const openSpan = document.createElement("span");
+      openSpan.style.color = statusObj.isOpen ? "#27ae60" : "#e74c3c";
+      openSpan.textContent = statusObj.isOpen ? "OPEN" : "CLOSED";
+      const sessionSpan = document.createElement("span");
+      sessionSpan.style.color = "#555";
+      sessionSpan.textContent = statusObj.session || "";
+      const dateOptions = { year: "numeric", month: "long", day: "numeric" };
+      const formattedDate = new Date(statusObj.t * 1000).toLocaleDateString(undefined, dateOptions);
+      const dateSpan = document.createElement("span");
+      dateSpan.style.color = "#555";
+      dateSpan.textContent = formattedDate || "";
+      statusDiv.appendChild(document.createTextNode(exch + " exchange is "));
+      statusDiv.appendChild(openSpan);
+      statusDiv.appendChild(document.createTextNode(" | Session: "));
+      statusDiv.appendChild(sessionSpan);
+      statusDiv.appendChild(document.createTextNode(" | "));
+      statusDiv.appendChild(dateSpan);
+      resultElem.appendChild(statusDiv);
+      if (statusObj.holiday) {
+        const holidayDiv = document.createElement("div");
+        holidayDiv.textContent = "Holiday: " + statusObj.holiday;
+        resultElem.appendChild(holidayDiv);
       }
-
-      const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-      let date = new Date(statusObj.t * 1000);
-      const formattedDate = date.toLocaleDateString(undefined,dateOptions);
-
-      statusText = `<div style="padding:8px 0 0 0;font-size:1.1em;font-weight:bold;color:#333;">${exch} 
-        exchange is <span style="color:${statusObj.isOpen ? "#27ae60" : "#e74c3c"}">${statusObj.isOpen ? "OPEN" : "CLOSED"}</span>
-         | Session: <span style="color:#555;">${statusObj.session || ""}</span> | <span style="color:#555;">${formattedDate || ""}</span></div>`;
-
     }
   } catch (err) {
-    statusText = "";
     console.log(err);
   }
-  
-  resultElem.innerHTML += statusText;
 
-  if (holidayText) {
-    resultElem.innerHTML += holidayText;
-  }
-
-  resultElem.innerHTML += "<br>";
+  resultElem.appendChild(document.createElement("br"));
   
   // Fetch and display market news
   try{
@@ -417,6 +463,241 @@ function getRangeSelectorHTML() {
 
 function getChartContainerHTML() {
   return `<div id="stockChart" style="width:100%;height:350px;margin:16px 0 0 0;display:none;"></div>`;
+}
+
+function getStockResultStaticHTML() {
+  return `
+    <div id="tickerHeader" style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+      <div><strong id="p-companyName"></strong> (<span id="p-ticker"></span>)
+      <br>
+      <span id="p-currentPrice" style="font-size:.85em"></span> <span id="p-dailyChange" style="font-size: 0.7em"></span>
+      <br>
+      <span id="p-marketTime" style="font-size:.44em"></span></div>
+    </div>
+    <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;" id="chartContainer">
+      ${getRangeSelectorHTML()}
+      ${getChartContainerHTML()}
+    </div>
+    <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 300px;">
+        <div id="stockInfoContainer">
+          <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+            <strong id="p-label"></strong> <span id="p-confidence"></span>
+          </div>
+          <div style="margin-bottom: 8px;" id="p-currentPriceLine"></div>
+          <div style="margin-bottom: 8px;" id="p-dailyChangeLine"></div>
+          <div style="font-size: 14px; color: #555; margin-bottom: 8px;" id="p-sentimentLine"></div>
+        </div>
+        <h3 class="sectionHeader">Key Stats</h3>
+        <div style="font-size: 14px; color: #555; margin-bottom: 16px; display:flex; justify-content: space-evenly;" id="keyStats">
+          <div id="keyStatsLeftSide" style="display: flex; flex-direction: column; flex: 1;">
+            <div id="keyStat-exchange" style="display: inline;"></div>
+            <div id="keyStat-previousClose" style="display: inline;"></div>
+            <div id="keyStat-highPrice" style="display: inline;"></div>
+            <div id="keyStat-lowPrice" style="display: inline;"></div>
+          </div>
+          <div id="keyStatsRightSide" style="display: flex; flex-direction: column; flex: 1;">
+            <div id="keyStat-openPrice" style="display: inline;"></div>
+            <div id="keyStat-52Week" style="display: inline;"></div>
+          </div>
+        </div>
+        <h3 class="sectionHeader">Basic Financials</h3>
+        <div style="font-size: 14px; color: #555; display:flex; justify-content: space-betwen;" id="basicFinancials">
+          <div id="basicFinancialsLeftSide" style="display:flex; flex-direction: column; flex: 1;">
+            <div id="bf-revenuePerShare" style="display: inline;"></div>
+            <div id="bf-earningsPerShare" style="display: inline;"></div>
+            <div id="bf-currentRatio" style="display: inline;"></div>
+            <div id="bf-priceToEarnings" style="display: inline;"></div>
+          </div>
+          <div id="basicFinancialsRightSide" style="display:flex; flex-direction: column; flex: 1;">
+            <div id="bf-dividendYield" style="display: inline;"></div>
+            <div id="bf-returnOnEquity" style="display: inline;"></div>
+            <div id="bf-profitMargin" style="display: inline;"></div>
+            <div id="bf-epsAnnual" style="display: inline;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h3 class="sectionHeader">Insider Sentiment</h3>
+    <div id="insiderSentimentSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
+      <p>The Insider Buy/Sell Ratio for the USA's overall market quantifies the transactions of insider purchases to sales by corporate insiders. It is calculated by dividing the number of purchase transactions by the number of sale transactions conducted by insiders. This ratio serves as a barometer of insiders' confidence in the market, with a higher ratio indicating optimism and a lower ratio suggesting potential pessimism about future market conditions. (Monthly data, but only months with insider activity are displayed.)</p>
+      <div id="insiderSentimentList" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;"></div>
+    </div>
+    <h3 class="sectionHeader">Recent Insider Transactions</h3>
+    <div id="insiderTransactionsSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
+      <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <thead>
+            <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+              <th style="padding: 8px; text-align: left; font-weight: bold;">Name</th>
+              <th style="padding: 8px; text-align: center; font-weight: bold;">Shares After Transaction</th>
+              <th style="padding: 8px; text-align: center; font-weight: bold;">Price</th>
+              <th style="padding: 8px; text-align: center; font-weight: bold;">Change in Shares</th>
+              <th style="padding: 8px; text-align: center; font-weight: bold;">Date</th>
+            </tr>
+          </thead>
+          <tbody id="insiderTransactionsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <h3 class="sectionHeader">Latest News</h3>
+    <div id="newsFeed"></div>
+  `;
+}
+
+function setElText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function fillStockResultData(data, profileData) {
+  const changeColor = data.dailyChange >= 0 ? "green" : "red";
+  const changeSymbol = data.dailyChange >= 0 ? "+" : "";
+  const n = (x) => (x != null && x !== undefined ? x : "N/A");
+
+  setElText("p-companyName", data.companyName || "");
+  setElText("p-ticker", data.ticker || "");
+  setElText("p-currentPrice", data.currentPrice != null ? "$" + data.currentPrice.toFixed(2) : "N/A");
+  const dailyChangeEl = document.getElementById("p-dailyChange");
+  if (dailyChangeEl) {
+    dailyChangeEl.style.color = changeColor;
+    dailyChangeEl.textContent = (changeSymbol + (data.dailyChange?.toFixed(2) ?? "N/A") + " (" + changeSymbol + (data.dailyChangePercent?.toFixed(2) ?? "N/A") + "%)");
+  }
+  setElText("p-marketTime", getMarketTimeDisplay());
+  setElText("p-label", data.label || "");
+  const confEl = document.getElementById("p-confidence");
+  if (confEl) confEl.textContent = (data.confidence || "") + " confidence";
+  setElText("p-currentPriceLine", "Current Price: $" + (data.currentPrice?.toFixed(2) ?? "N/A"));
+  const dailyLine = document.getElementById("p-dailyChangeLine");
+  if (dailyLine) {
+    dailyLine.style.color = changeColor;
+    dailyLine.textContent = "Daily Change: " + changeSymbol + "$" + (data.dailyChange?.toFixed(2) ?? "N/A") + " (" + changeSymbol + (data.dailyChangePercent?.toFixed(2) ?? "N/A") + "%)";
+  }
+  setElText("p-sentimentLine", [data.sentiment, data.trend, data.insider].filter(Boolean).join(" | ") || "");
+
+  setElText("keyStat-exchange", "Exchange: " + (profileData?.exchange ?? "N/A"));
+  setElText("keyStat-previousClose", "Previous Close: " + (data.previousClose?.toFixed(2) ?? "N/A"));
+  setElText("keyStat-highPrice", "High Price: " + (data.highPrice?.toFixed(2) ?? "N/A"));
+  setElText("keyStat-lowPrice", "Low Price: " + (data.lowPrice?.toFixed(2) ?? "N/A"));
+  setElText("keyStat-openPrice", "Open Price: " + (data.openPrice?.toFixed(2) ?? "N/A"));
+  const bf = data.basicFinancials || {};
+  setElText("keyStat-52Week", "52 Week Range: " + (bf["52WeekLow"] ?? "—") + " - " + (bf["52WeekHigh"] ?? "—"));
+  setElText("bf-revenuePerShare", "Revenue Per Share TTM: " + n(bf.revenuePerShareTTM));
+  setElText("bf-earningsPerShare", "Earnings Per Share: " + n(bf.earningsPerShare));
+  setElText("bf-currentRatio", "Current Ratio: " + n(bf.currentRatioAnnual));
+  setElText("bf-priceToEarnings", "Price to Earnings: " + n(bf.priceToEarnings));
+  setElText("bf-dividendYield", "Dividend Yield: " + n(bf.dividendYieldTTM));
+  setElText("bf-returnOnEquity", "Return on Equity: " + n(bf.returnOnEquity));
+  setElText("bf-profitMargin", "Profit Margin: " + n(bf.profitMargin));
+  setElText("bf-epsAnnual", "EPS Annual: " + n(bf.epsAnnual));
+
+  const sentimentList = document.getElementById("insiderSentimentList");
+  if (sentimentList) {
+    sentimentList.replaceChildren();
+    if (data.insiderSentiment?.data?.length) {
+      data.insiderSentiment.data.slice().reverse().forEach((item) => {
+        const card = document.createElement("div");
+        card.style.cssText = "padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px; flex: 1; min-width: 150px;";
+        const monthYear = new Date(item.year, item.month - 1).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+        const changeColor = item.change > 0 ? "#27ae60" : item.change < 0 ? "#e74c3c" : "#666";
+        const changeSymbol = item.change > 0 ? "+" : "";
+        const d1 = document.createElement("div");
+        const strong1 = document.createElement("strong");
+        strong1.textContent = monthYear;
+        d1.appendChild(strong1);
+        card.appendChild(d1);
+        const d2 = document.createElement("div");
+        d2.style.cssText = "margin-top: 4px; color: " + changeColor + ";";
+        d2.appendChild(document.createTextNode("Net Change: "));
+        d2.appendChild(document.createTextNode(changeSymbol + item.change.toLocaleString()));
+        card.appendChild(d2);
+        const d3 = document.createElement("div");
+        d3.style.cssText = "margin-top: 4px; font-size: 12px; color: #888;";
+        d3.appendChild(document.createTextNode("MSPR: "));
+        d3.appendChild(document.createTextNode(item.mspr != null ? item.mspr.toFixed(2) : "N/A"));
+        card.appendChild(d3);
+        sentimentList.appendChild(card);
+      });
+    } else {
+      const empty = document.createElement("div");
+      empty.style.color = "#999";
+      empty.textContent = "No insider sentiment data available.";
+      sentimentList.appendChild(empty);
+    }
+  }
+
+  const tbody = document.getElementById("insiderTransactionsBody");
+  if (tbody) {
+    tbody.replaceChildren();
+    if (data.insiderTransactions?.data?.length) {
+      data.insiderTransactions.data.slice(0, 100).forEach((tx) => {
+        const shareChange = tx.change ?? 0;
+        const shareChangeColor = shareChange > 0 ? "#27ae60" : shareChange < 0 ? "#e74c3c" : "#666";
+        const shareChangeSymbol = shareChange > 0 ? "+" : "";
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #eee";
+        const td1 = document.createElement("td");
+        td1.style.padding = "8px";
+        td1.textContent = tx.name || "N/A";
+        const td2 = document.createElement("td");
+        td2.style.cssText = "padding: 8px; text-align: center;";
+        td2.textContent = (tx.share ?? 0).toLocaleString();
+        const td3 = document.createElement("td");
+        td3.style.cssText = "padding: 8px; text-align: center;";
+        td3.textContent = "$" + (tx.transactionPrice ?? 0).toFixed(2);
+        const td4 = document.createElement("td");
+        td4.style.cssText = "padding: 8px; text-align: center; color: " + shareChangeColor + ";";
+        const strong4 = document.createElement("strong");
+        strong4.textContent = shareChangeSymbol + shareChange.toFixed(2);
+        td4.appendChild(strong4);
+        const td5 = document.createElement("td");
+        td5.style.cssText = "padding: 8px; text-align: center;";
+        td5.textContent = tx.transactionDate ? new Date(tx.transactionDate).toLocaleDateString() : "N/A";
+        tr.append(td1, td2, td3, td4, td5);
+        tbody.appendChild(tr);
+      });
+    } else {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 5;
+      td.style.cssText = "padding: 8px; color: #999;";
+      td.textContent = "No insider transactions data available.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    }
+  }
+
+  const newsFeed = document.getElementById("newsFeed");
+  if (newsFeed) {
+    newsFeed.replaceChildren();
+    if (Array.isArray(data.news) && data.news.length) {
+      data.news.forEach((article) => {
+        const div = document.createElement("div");
+        div.className = "news-article";
+        div.style.cssText = "margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #eee;";
+        const a = document.createElement("a");
+        a.target = "_blank";
+        a.style.cssText = "font-weight:bold; color:#1a0dab; text-decoration:none;";
+        a.textContent = article.headline || "";
+        if (article.url && isSafeUrl(article.url)) a.href = article.url.trim();
+        div.appendChild(a);
+        const meta = document.createElement("div");
+        meta.style.cssText = "font-size:12px; color:#888;";
+        meta.textContent = (article.source || "") + " • " + (article.datetime ? new Date(article.datetime * 1000).toLocaleDateString() : "");
+        div.appendChild(meta);
+        const summary = document.createElement("div");
+        summary.style.cssText = "font-size:14px; color:#444; margin-top:4px;";
+        summary.textContent = htmlToPlainText(article.summary || "");
+        div.appendChild(summary);
+        newsFeed.appendChild(div);
+      });
+    } else {
+      const empty = document.createElement("div");
+      empty.style.color = "#888";
+      empty.textContent = "No recent news found.";
+      newsFeed.appendChild(empty);
+    }
+  }
 }
 
 // Update renderStockChart to use the dynamic stockChart
@@ -554,201 +835,9 @@ async function performStockSearch(ticker) {
       const changeColor = data.dailyChange >= 0 ? "green" : "red";
       const changeSymbol = data.dailyChange >= 0 ? "+" : "";
       resultElem.style.display = "block";
-      
-      // Inject result, range selector, and chart container
-      resultElem.innerHTML = `
-            <div id="tickerHeader" style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <div><strong>${data.companyName}</strong> (${data.ticker})
-            <br>
-            <span style="font-size:.85em">$${data.currentPrice?.toFixed(2)}</span> <span style="font-size: 0.7em; color: ${changeColor};">${changeSymbol}${data.dailyChange?.toFixed(2) || "N/A"} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || "N/A"}%)</span>            
-            <br>
-            <span style="font-size:.44em">${getMarketTimeDisplay()}</span></div>
-            </div>
-          
-          <!--Stock Chart -->
-            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;" id="chartContainer">
-              ${getRangeSelectorHTML()}
-              ${getChartContainerHTML()}
-            </div>
 
-          <!-- Stock Info/Financials-->
-          <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
-          
-            <div style="flex: 1; min-width: 300px;">
-              
-              <div id="stockInfoContainer">
-                <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
-                  <strong>${data.label}</strong> (${data.confidence} confidence)
-                </div>
-                <div style="margin-bottom: 8px;">
-                  <strong>Current Price:</strong> $${data.currentPrice?.toFixed(2) || "N/A"}
-                </div>
-                <div style="margin-bottom: 8px; color: ${changeColor};">
-                  <strong>Daily Change:</strong> ${changeSymbol}$${data.dailyChange?.toFixed(2) || "N/A"} (${changeSymbol}${data.dailyChangePercent?.toFixed(2) || "N/A"}%)
-                </div>
-                <div style="font-size: 14px; color: #555; margin-bottom: 8px;">
-                  ${data.sentiment} | ${data.trend} | ${data.insider}
-                </div>
-              </div>
-
-              <h3 class="sectionHeader">Key Stats</h3>
-              <div style="font-size: 14px; color: #555; margin-bottom: 16px; display:flex; justify-content: space-evenly;" id="keyStats" >
-                <div id="keyStatsLeftSide" style="display: flex; flex-direction: column; flex: 1;">
-                  <div style="display: inline;"><strong>Exchange:</strong> ${profileData.exchange || "N/A"}</div>  
-                  <div style="display: inline;"><strong>Previous Close:</strong> ${data.previousClose?.toFixed(2) || "N/A"}</div>
-                  <div style="display: inline;"><strong>High Price:</strong> ${data.highPrice?.toFixed(2) || "N/A"}</div>
-                  <div style="display: inline;"><strong>Low Price:</strong> ${data.lowPrice?.toFixed(2) || "N/A"}</div>
-                </div>
-                <div id="keyStatsRightSide" style="display: flex; flex-direction: column; flex: 1;">
-                  <div style="display: inline;"> <strong>Open Price:</strong> ${data.openPrice?.toFixed(2) || "N/A"}</div>
-                  <div style="display: inline;"> <strong>52 Week Range:</strong> ${data.basicFinancials?.["52WeekLow"]} - ${data.basicFinancials?.["52WeekHigh"]} </div>
-                </div>
-              </div>
-              
-              <h3 class="sectionHeader">Basic Financials</h3>
-              <div style="font-size: 14px; color: #555; display:flex; justify-content: space-betwen;" id="basicFinancials">                
-                <div id="basicFinancialsLeftSide" style="display:flex; flex-direction: column; flex: 1;">
-                  <div style="display: inline;"><strong>Revenue Per Share TTM:</strong> ${data.basicFinancials.revenuePerShareTTM}</div>
-                  <div style="display: inline;"><strong>Earnings Per Share:</strong> ${data.basicFinancials.earningsPerShare}</div>
-                  <div style="display: inline;"><strong>Current Ratio:</strong> ${data.basicFinancials.currentRatioAnnual}</div>                        
-                  <div style="display: inline;"><strong>Price to Earnings:</strong> ${data.basicFinancials.priceToEarnings}</div>
-                </div>
-                <div id="basicFinancialsRightSide" style="display:flex; flex-direction: column; flex: 1;">
-                  <div style="display: inline;"><strong>Dividend Yield:</strong> ${data.basicFinancials.dividendYieldTTM}</div>
-                  <div style="display: inline;"><strong>Return on Equity:</strong> ${data.basicFinancials.returnOnEquity}</div>
-                  <div style="display: inline;"><strong>Profit Margin:</strong> ${data.basicFinancials.profitMargin}</div>
-                  <div style="display: inline;"><strong>EPS Annual:</strong> ${data.basicFinancials.epsAnnual}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Insider Sentiment - Full Width Below -->
-          <h3 class="sectionHeader">Insider Sentiment</h3>
-          <div id="insiderSentimentSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
-            <p>The Insider Buy/Sell Ratio for the USA's overall market quantifies the transactions of insider purchases to sales by corporate insiders. It is calculated by dividing the number of purchase transactions by the number of sale transactions conducted by insiders. This ratio serves as a barometer of insiders' confidence in the market, with a higher ratio indicating optimism and a lower ratio suggesting potential pessimism about future market conditions. (Monthly data, but only months with insider activity are displayed.)</p>
-            ${
-              data.insiderSentiment &&
-              data.insiderSentiment.data &&
-              data.insiderSentiment.data.length > 0
-                ? `
-                  <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                    ${data.insiderSentiment.data
-                      .slice()
-                      .reverse()
-                      .map((item) => {
-                        const monthYear = new Date(
-                          item.year,
-                          item.month - 1,
-                        ).toLocaleDateString("en-US", {
-                          month: "short",
-                          year: "numeric",
-                        });
-                        const changeColor =
-                          item.change > 0
-                            ? "#27ae60"
-                            : item.change < 0
-                              ? "#e74c3c"
-                              : "#666";
-                        const changeSymbol = item.change > 0 ? "+" : "";
-                        return `
-                        <div style="padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px; flex: 1; min-width: 150px;">
-                          <div><strong>${monthYear}</strong></div>
-                          <div style="margin-top: 4px; color: ${changeColor};">
-                            <strong>Net Change:</strong> ${changeSymbol}${item.change.toLocaleString()}
-                          </div>
-                          <div style="margin-top: 4px; font-size: 12px; color: #888;">
-                            <strong>MSPR:</strong> ${item.mspr ? item.mspr.toFixed(2) : "N/A"}
-                          </div>
-                        </div>
-                      `;
-                      })
-                      .join("")}
-                  </div>
-                `
-                : '<div style="color: #999;">No insider sentiment data available.</div>'
-            }
-          </div>
-
-          <!-- Insider Transactions - Full Width Below -->
-          <h3 class="sectionHeader">Recent Insider Transactions</h3>
-          <div id="insiderTransactionsSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
-            ${
-              data.insiderTransactions &&
-              data.insiderTransactions.data &&
-              data.insiderTransactions.data.length > 0
-                ? `
-                  <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                      <thead>
-                        <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
-                          <th style="padding: 8px; text-align: left; font-weight: bold;">Name</th>
-                          <th style="padding: 8px; text-align: center; font-weight: bold;">Shares After Transaction</th>
-                          <th style="padding: 8px; text-align: center; font-weight: bold;">Price</th>
-                          <th style="padding: 8px; text-align: center; font-weight: bold;">Change in Shares</th>
-                          <th style="padding: 8px; text-align: center; font-weight: bold;">Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${data.insiderTransactions.data
-                          .slice(0, 100)
-                          .map((tx) => {
-                            const shareChange = tx.change || 0;
-                            const shareChangeColor =
-                              shareChange > 0
-                                ? "#27ae60"
-                                : shareChange < 0
-                                  ? "#e74c3c"
-                                  : "#666";
-                            const shareChangeSymbol =
-                              shareChange > 0 ? "+" : "";
-                            return `
-                            <tr style="border-bottom: 1px solid #eee;">
-                              <td style="padding: 8px;">${tx.name || "N/A"}</td>
-                              <td style="padding: 8px; text-align: center;">${(tx.share || 0).toLocaleString()}</td>
-                              <td style="padding: 8px; text-align: center;">$${(tx.transactionPrice || 0).toFixed(2)}</td>
-                              <td style="padding: 8px; text-align: center; color: ${shareChangeColor};"><strong>${shareChangeSymbol}${shareChange.toFixed(2)}</strong></td>
-                              <td style="padding: 8px; text-align: center;">${tx.transactionDate ? new Date(tx.transactionDate).toLocaleDateString() : "N/A"}</td>
-                            </tr>
-                          `;
-                          })
-                          .join("")}
-                      </tbody>
-                    </table>
-                  </div>
-                `
-                : '<div style="color: #999;">No insider transactions data available.</div>'
-            }
-          </div>
-          
-          <!-- Latest News - Full Width Below -->
-          <h3 class="sectionHeader">Latest News</h3>
-          <div id="newsFeed">
-            ${
-              Array.isArray(data.news) && data.news.length
-                ? data.news
-                    .map(
-                      (article) => `
-                  <div class="news-article" style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #eee;">
-                    <a href="${article.url}" target="_blank" style="font-weight:bold; color:#1a0dab; text-decoration:none;">
-                      ${article.headline}
-                    </a>
-                    <div style="font-size:12px; color:#888;">
-                      ${article.source} • ${new Date(article.datetime * 1000).toLocaleDateString()}
-                    </div>
-                    <div style="font-size:14px; color:#444; margin-top:4px;">
-                      ${article.summary || ""}
-                    </div>
-                  </div>
-                `,
-                    )
-                    .join("")
-                : '<div style="color:#888;">No recent news found.</div>'
-            }
-          </div>
-          </div>
-        </div>
-      `;
+      resultElem.innerHTML = getStockResultStaticHTML();
+      fillStockResultData(data, profileData);
 
       // Render watch/star button and fetch+render chart for current range
       // Add small delay to ensure DOM is ready after innerHTML
@@ -897,6 +986,11 @@ async function fetchProfileData(ticker) {
 
 // --- Watchlist UI: fetch, render, and interactions (modular & reusable) ---
 
+/**
+ * Parses an HTML string into a single DOM element.
+ * @param {string} html - Must be trusted or pre-sanitized HTML. Do not pass user or API content (XSS risk).
+ * @returns {Element|null} The first child element, or null.
+ */
 function createElementFromHTML(html) {
   const template = document.createElement("template");
   template.innerHTML = html.trim();
@@ -962,38 +1056,73 @@ function formatNumber(n) {
 }
 
 function renderWatchlistRows(items) {
-  if (!Array.isArray(items) || items.length === 0)
-    return '<div class="watch-empty">No tickers in your Watchlist. Star a ticker to add it.</div>';
+  if (!Array.isArray(items) || items.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "watch-empty";
+    empty.textContent = "No tickers in your Watchlist. Star a ticker to add it.";
+    return empty;
+  }
 
-  const rows = items
-    .map((item) => {
-      const sign = item.dailyChange > 0 ? "+" : "";
-      const changeClass =
-        item.dailyChange > 0 ? "pos" : item.dailyChange < 0 ? "neg" : "neutral";
-      return `
-      <div class="watch-row" data-ticker="${item.ticker}">
-        <div class="col ticker"><strong>${item.ticker}</strong></div>
-        <div class="col name">${item.companyName || ""}</div>
-        <div class="col price">${item.currentPrice !== null ? formatNumber(item.currentPrice) : "—"}</div>
-        <div class="col change ${changeClass}">${item.dailyChange !== null ? sign + formatNumber(item.dailyChange) : "—"}</div>
-        <div class="col changePct ${changeClass}">${item.dailyChangePercent !== null ? sign + item.dailyChangePercent.toFixed(2) + "%" : "—"}</div>
-        <div class="col action"><button class="row-star" aria-label="Remove from watchlist">✕</button></div>
-      </div>`;
-    })
-    .join("");
-
-  return `
-    <div class="watchlist-table">
-      <div class="watch-header">
-        <div class="col ticker">Ticker</div>
-        <div class="col name">Name</div>
-        <div class="col price">Price</div>
-        <div class="col change">$ Change</div>
-        <div class="col changePct">% Change</div>
-        <div class="col action"></div>
-      </div>
-      <div class="watch-rows">${rows}</div>
-    </div>`;
+  const table = document.createElement("div");
+  table.className = "watchlist-table";
+  const header = document.createElement("div");
+  header.className = "watch-header";
+  [
+    { text: "Ticker", cls: "ticker" },
+    { text: "Name", cls: "name" },
+    { text: "Price", cls: "price" },
+    { text: "$ Change", cls: "change" },
+    { text: "% Change", cls: "changePct" },
+    { text: "", cls: "action" },
+  ].forEach(({ text, cls }) => {
+    const col = document.createElement("div");
+    col.className = "col " + cls;
+    col.textContent = text;
+    header.appendChild(col);
+  });
+  table.appendChild(header);
+  const rowsWrap = document.createElement("div");
+  rowsWrap.className = "watch-rows";
+  items.forEach((item) => {
+    const sign = item.dailyChange > 0 ? "+" : "";
+    const changeClass = item.dailyChange > 0 ? "pos" : item.dailyChange < 0 ? "neg" : "neutral";
+    const row = document.createElement("div");
+    row.className = "watch-row";
+    row.dataset.ticker = item.ticker;
+    const tickerCol = document.createElement("div");
+    tickerCol.className = "col ticker";
+    const strong = document.createElement("strong");
+    strong.textContent = item.ticker;
+    tickerCol.appendChild(strong);
+    row.appendChild(tickerCol);
+    const nameCol = document.createElement("div");
+    nameCol.className = "col name";
+    nameCol.textContent = item.companyName || "";
+    row.appendChild(nameCol);
+    const priceCol = document.createElement("div");
+    priceCol.className = "col price";
+    priceCol.textContent = item.currentPrice !== null ? formatNumber(item.currentPrice) : "—";
+    row.appendChild(priceCol);
+    const changeCol = document.createElement("div");
+    changeCol.className = "col change " + changeClass;
+    changeCol.textContent = item.dailyChange !== null ? sign + formatNumber(item.dailyChange) : "—";
+    row.appendChild(changeCol);
+    const changePctCol = document.createElement("div");
+    changePctCol.className = "col changePct " + changeClass;
+    changePctCol.textContent = item.dailyChangePercent !== null ? sign + item.dailyChangePercent.toFixed(2) + "%" : "—";
+    row.appendChild(changePctCol);
+    const actionCol = document.createElement("div");
+    actionCol.className = "col action";
+    const btn = document.createElement("button");
+    btn.className = "row-star";
+    btn.setAttribute("aria-label", "Remove from watchlist");
+    btn.textContent = "✕";
+    actionCol.appendChild(btn);
+    row.appendChild(actionCol);
+    rowsWrap.appendChild(row);
+  });
+  table.appendChild(rowsWrap);
+  return table;
 }
 
 async function refreshWatchlistView() {
@@ -1002,7 +1131,8 @@ async function refreshWatchlistView() {
   container.innerHTML = '<div class="watch-loading">Loading watchlist…</div>';
   const anonId = ensureAnonId();
   const data = anonId ? await fetchWatchlistWithScores(anonId) : [];
-  container.innerHTML = renderWatchlistRows(data);
+  container.replaceChildren();
+  container.appendChild(renderWatchlistRows(data));
 
   // Re-attach ticker search listener after rendering new rows
   searchStockFromWaitlist();
@@ -1047,11 +1177,13 @@ function hideStockResult() {
   if (stockResult) {
     stockResult.style.display = 'none';
     stockResult.textContent = "";
-    // stockResult.hidden = true;
   }
+}
 
-  if (stockNav) {
-    stockNav.style.display = 'none';
+function hideStockNav() {
+  const stockNavBar = document.getElementById("stockNavBar");
+  if (stockNavBar) {
+    stockNavBar.style.display = 'none';
   }
 }
 
@@ -1135,3 +1267,12 @@ function formatStockNavBar() {
     console.log(err);
   }
 }
+
+// // Load profile tab
+// function loadProfileTab() {
+//   const profileBtn = document.getElementById("profileBtn");
+  
+//   profileBtn.addEventListener('click', function(e) {
+//     hideStockResult();
+//   })
+// }
