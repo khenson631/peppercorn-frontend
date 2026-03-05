@@ -1,4 +1,4 @@
-import { htmlToPlainText, isSafeUrl } from "./helpers.js";
+import { getSafeImageUrl, htmlToPlainText, isSafeUrl } from "./helpers.js";
 
 // Use local backend for testing (change back to production for deployment)
 const API_BASE_URL = "http://localhost:5000"; // Local backend for testing
@@ -292,14 +292,8 @@ function renderMarketNews(news) {
 
     const imageWrap = document.createElement("div");
     imageWrap.style.cssText = "flex:0 0 140px;display:flex;align-items:center;justify-content:center;margin-right:12px;";
-    if (item.image && isSafeUrl(item.image)) {
-      const img = document.createElement("img");
-      img.src = item.image.trim();
-      img.alt = "thumb";
-      img.style.cssText = "width:120px;height:80px;object-fit:cover;border-radius:6px;";
-      img.onerror = function () { this.style.display = "none"; };
-      imageWrap.appendChild(img);
-    } else {
+    function showNoImagePlaceholder() {
+      imageWrap.replaceChildren();
       imageWrap.style.background = "#f2f2f2";
       imageWrap.style.borderRadius = "6px";
       imageWrap.style.width = "120px";
@@ -307,6 +301,25 @@ function renderMarketNews(news) {
       imageWrap.style.color = "#999";
       imageWrap.style.fontSize = "12px";
       imageWrap.textContent = "No Image";
+    }
+    const imageUrl = getSafeImageUrl(item.image);
+    const articleUrl = item.url && isSafeUrl(item.url) ? item.url.trim() : null;
+    if (imageUrl) {
+      const img = document.createElement("img");
+      img.src = `${API_BASE_URL}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+      img.alt = "thumb";
+      img.style.cssText = "width:120px;height:80px;object-fit:cover;border-radius:6px;";
+      img.onerror = showNoImagePlaceholder;
+      imageWrap.appendChild(img);
+    } else if (articleUrl) {
+      const img = document.createElement("img");
+      img.src = `${API_BASE_URL}/api/article-thumbnail?url=${encodeURIComponent(articleUrl)}`;
+      img.alt = "thumb";
+      img.style.cssText = "width:120px;height:80px;object-fit:cover;border-radius:6px;";
+      img.onerror = showNoImagePlaceholder;
+      imageWrap.appendChild(img);
+    } else {
+      showNoImagePlaceholder();
     }
     row.appendChild(imageWrap);
 
