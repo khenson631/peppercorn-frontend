@@ -14,6 +14,21 @@ export function isSafeUrl(url) {
 }
 
 /**
+ * Returns a safe image URL for use in img src, or null if invalid.
+ * Allows http, https, and protocol-relative (//) URLs; normalizes // to https.
+ * @param {string} url
+ * @returns {string|null}
+ */
+export function getSafeImageUrl(url) {
+  if (typeof url !== "string" || !url.trim()) return null;
+  const u = url.trim();
+  const lower = u.toLowerCase();
+  if (lower.startsWith("https://") || lower.startsWith("http://")) return u;
+  if (lower.startsWith("//")) return "https:" + u;
+  return null;
+}
+
+/**
  * Strip HTML tags and decode common entities so API content can be shown as plain text safely.
  * @param {string} html
  * @returns {string}
