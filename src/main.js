@@ -835,7 +835,23 @@ async function performStockSearch(ticker) {
 
     formatStockNavBar();
 
-    formatStockNavBar();
+    /////////////////////////
+    // Handle Profile Tab////
+    let profileBtn = document.querySelector("#profileBtn");
+
+    if (profileBtn) {
+        profileBtn.addEventListener('click', function(e) {
+          loadProfileTab();
+      })
+    }
+
+    function loadProfileTab() {
+      hideStockResult();
+      // fetchProfileData(ticker);
+      fillStockResultData(data, profileData);
+    }
+    /////////////////////////
+
 
     if (data.label && data.confidence) {
       
@@ -1180,7 +1196,6 @@ function hideWatchlist() {
 
 function hideStockResult() {
   const stockResult = document.getElementById("stockResult");
-  const stockNav = document.getElementById("stockNavBar");
   if (stockResult) {
     stockResult.style.display = 'none';
     stockResult.textContent = "";
@@ -1274,12 +1289,3 @@ function formatStockNavBar() {
     console.log(err);
   }
 }
-
-// // Load profile tab
-// function loadProfileTab() {
-//   const profileBtn = document.getElementById("profileBtn");
-  
-//   profileBtn.addEventListener('click', function(e) {
-//     hideStockResult();
-//   })
-// }
