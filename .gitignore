@@ -1,3 +1,4 @@
 old-dnu/
 node_modules/
 dist/
+docs/ARCHITECTURE-REFACTOR.md
