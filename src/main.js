@@ -256,8 +256,7 @@ async function fetchMarketNews(category = "general", minId = 0) {
       (minId ? `&minId=${encodeURIComponent(minId)}` : "");
     const res = await fetch(url);
     if (!res.ok) {
-      throw new Error("Failed fetching market news")
-      
+      throw new Error("Failed fetching market news")    
     };
     const json = await res.json();
     return Array.isArray(json) ? json : [];
@@ -284,6 +283,8 @@ function renderMarketNews(news) {
     resultElem.appendChild(wrapper);
     return;
   }
+
+  
 
   news.forEach((item) => {
     const row = document.createElement("div");
@@ -360,14 +361,8 @@ async function showHome() {
     hideStockNav();
     hideWatchlist();
   } catch(e) {
-    // ignore
+    console.log("showHome function; Error clearing existing elements. ", e);
   }
-
-  // try {
-  //   hideWatchlist();
-  // } catch (e) {
-  //   /* ignore */
-  // }
 
   // Fetch and display market status at the top
   try {
@@ -423,7 +418,6 @@ async function showHome() {
 document.getElementById("homeTab")?.addEventListener("click", async (e) => {
   e.preventDefault();
   await showHome();
-  // showHome();
 });
 
 // Load Market News on initial page load
