@@ -7,6 +7,6 @@ export async function fetchMarketStatus(exchange = "US") {
     return Array.isArray(arr) ? arr : [];
   } catch(error) {
     console.error("fetchMarketStatus failed: ", error);
+    return [];
   }
-    
 }
