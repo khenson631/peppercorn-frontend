@@ -46,3 +46,11 @@ export function htmlToPlainText(html) {
     .replace(/\s+/g, " ")
     .trim();
 }
+
+export function formatNumber(n) {
+  if (n === null || n === undefined) return "—";
+  return n.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
