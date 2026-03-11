@@ -1,11 +1,19 @@
 import { getSafeImageUrl, htmlToPlainText, isSafeUrl } from "./helpers.js";
 import { API_BASE_URL } from "./config.js";
 
+
+//////////////////////////////////////////
+// This file should serve as the launching point for the app.
+// The full code for each page should NOT live here.
+// The code for each page and function should live in it's respective folder. 
+// The goal is to keep things as modular and maintainable as possible. 
+/////////////////////////////////////////
+
+
 //////////////////////////////////////////
 // Display home page//////////////////////
 import * as homePage from "./pages/home.js";
 
-// const resultContainer = document.getElementById("resultContainer");
 const stockResult = document.getElementById("stockResult"); // or a dedicated #homeContainer
 
 document.getElementById("homeTab")?.addEventListener("click", async () => {
@@ -17,7 +25,6 @@ document.getElementById("homeTab")?.addEventListener("click", async () => {
 // Initial load
 await homePage.mount(stockResult);
 //////////////////////////////////////////
-
 
 // --- Watchlist / anonymous id helpers (PoC using backend JSON store) ---
 function ensureAnonId() {
@@ -981,7 +988,7 @@ async function refreshWatchlistView() {
   container.appendChild(renderWatchlistRows(data));
 
   // Re-attach ticker search listener after rendering new rows
-  searchStockFromWaitlist();
+  searchStockFromWatchlist();
 
   // attach row star handlers
   container.querySelectorAll(".row-star").forEach((btn) => {
@@ -1043,11 +1050,11 @@ document
     }
     showWatchlist();
     await refreshWatchlistView();
-    searchStockFromWaitlist();
+    searchStockFromWatchlist();
   });
 
-// --- Trigger search on clicking ticker from waitlist ---
-function searchStockFromWaitlist() {
+// --- Trigger search on clicking ticker from watchlist ---
+function searchStockFromWatchlist() {
   const watchTable = document.querySelector(".watchlist-table");
   if (!watchTable) return;
 
