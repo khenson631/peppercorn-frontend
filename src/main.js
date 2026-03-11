@@ -1,8 +1,27 @@
 import { getSafeImageUrl, htmlToPlainText, isSafeUrl } from "./helpers.js";
+import { API_BASE_URL } from "./config.js";
 
 // Use local backend for testing (change back to production for deployment)
-const API_BASE_URL = "http://localhost:5000"; // Local backend for testing
+// const API_BASE_URL = "http://localhost:5000"; // Local backend for testing
 // const API_BASE_URL = 'https://peppercorn-backend.onrender.com';  // Production backend
+
+//////////////////////////////////////////
+// Display home page//////////////////////
+import * as homePage from "./pages/home.js";
+
+const resultContainer = document.getElementById("resultContainer");
+const stockResult = document.getElementById("stockResult"); // or a dedicated #homeContainer
+
+document.getElementById("homeTab")?.addEventListener("click", async () => {
+  hideWatchlist();
+  hideStockResult(); // or your generic “hide other views”
+  await homePage.mount(stockResult);
+});
+
+// Initial load
+await homePage.mount(stockResult);
+//////////////////////////////////////////
+
 
 // --- Watchlist / anonymous id helpers (PoC using backend JSON store) ---
 function ensureAnonId() {
@@ -248,180 +267,179 @@ function showRangeLabels() {
 
 hideRangeLabels();
 
-// --- Market News (Home) ---
-async function fetchMarketNews(category = "general", minId = 0) {
-  try {
-    const url =
-      `${API_BASE_URL}/api/market-news?category=${encodeURIComponent(category)}` +
-      (minId ? `&minId=${encodeURIComponent(minId)}` : "");
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error("Failed fetching market news")    
-    };
-    const json = await res.json();
-    return Array.isArray(json) ? json : [];
-  } catch (err) {
-    console.error("fetchMarketNews error", err);
-    return [];
-  }
-}
+// // --- Market News (Home) ---
+// async function fetchMarketNews(category = "general", minId = 0) {
+//   try {
+//     const url =
+//       `${API_BASE_URL}/api/market-news?category=${encodeURIComponent(category)}` +
+//       (minId ? `&minId=${encodeURIComponent(minId)}` : "");
+//     const res = await fetch(url);
+//     if (!res.ok) {
+//       throw new Error("Failed fetching market news")    
+//     };
+//     const json = await res.json();
+//     return Array.isArray(json) ? json : [];
+//   } catch (err) {
+//     console.error("fetchMarketNews error", err);
+//     return [];
+//   }
+// }
 
-function renderMarketNews(news) {
-  resultElem.style.display = "block";
-  const wrapper = document.createElement("div");
-  wrapper.style.cssText = "padding:8px 0 0 0;";
-  const heading = document.createElement("h3");
-  heading.style.cssText = "margin:0 0 8px 0;";
-  heading.textContent = "Market News";
-  wrapper.appendChild(heading);
+// function (news) {
+//   resultElem.style.display = "block";
+//   const wrapper = document.createElement("div");
+//   wrapper.style.cssText = "padding:8px 0 0 0;";
+//   const heading = document.createElement("h3");
+//   heading.style.cssText = "margin:0 0 8px 0;";
+//   heading.textContent = "Market News";
+//   wrapper.appendChild(heading);
 
-  if (!Array.isArray(news) || news.length === 0) {
-    const empty = document.createElement("div");
-    empty.style.cssText = "padding:16px;color:#666;";
-    empty.textContent = "No market news available.";
-    wrapper.appendChild(empty);
-    resultElem.appendChild(wrapper);
-    return;
-  }
+//   if (!Array.isArray(news) || news.length === 0) {
+//     const empty = document.createElement("div");
+//     empty.style.cssText = "padding:16px;color:#666;";
+//     empty.textContent = "No market news available.";
+//     wrapper.appendChild(empty);
+//     resultElem.appendChild(wrapper);
+//     return;
+//   }
 
+
+//   news.forEach((item) => {
+//     const row = document.createElement("div");
+//     row.className = "news-item";
+//     row.style.cssText = "display:flex;gap:12px;padding:12px;border-bottom:1px solid #eee;align-items:flex-start;";
+
+//     const imageWrap = document.createElement("div");
+//     imageWrap.style.cssText = "flex:0 0 140px;display:flex;align-items:center;justify-content:center;margin-right:12px;";
+//     function showNoImagePlaceholder() {
+//       imageWrap.replaceChildren();
+//       imageWrap.style.background = "#f2f2f2";
+//       imageWrap.style.borderRadius = "6px";
+//       imageWrap.style.width = "120px";
+//       imageWrap.style.height = "80px";
+//       imageWrap.style.color = "#999";
+//       imageWrap.style.fontSize = "12px";
+//       imageWrap.textContent = "No Image";
+//     }
+//     const imageUrl = getSafeImageUrl(item.image);
+//     const articleUrl = item.url && isSafeUrl(item.url) ? item.url.trim() : null;
+//     if (imageUrl) {
+//       const img = document.createElement("img");
+//       img.src = `${API_BASE_URL}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+//       img.alt = "thumb";
+//       img.style.cssText = "width:120px;height:80px;object-fit:cover;border-radius:6px;";
+//       img.onerror = showNoImagePlaceholder;
+//       imageWrap.appendChild(img);
+//     } else if (articleUrl) {
+//       const img = document.createElement("img");
+//       img.src = `${API_BASE_URL}/api/article-thumbnail?url=${encodeURIComponent(articleUrl)}`;
+//       img.alt = "thumb";
+//       img.style.cssText = "width:120px;height:80px;object-fit:cover;border-radius:6px;";
+//       img.onerror = showNoImagePlaceholder;
+//       imageWrap.appendChild(img);
+//     } else {
+//       showNoImagePlaceholder();
+//     }
+//     row.appendChild(imageWrap);
+
+//     const body = document.createElement("div");
+//     body.style.cssText = "flex:1;min-width:0;";
+
+//     const link = document.createElement("a");
+//     link.target = "_blank";
+//     link.style.cssText = "font-weight:bold;color:#1a0dab;text-decoration:none;display:block;";
+//     link.textContent = item.headline || "";
+//     if (item.url && isSafeUrl(item.url)) link.href = item.url.trim();
+//     body.appendChild(link);
+
+//     const date = item.datetime ? new Date(item.datetime * 1000).toLocaleString() : "";
+//     const meta = document.createElement("div");
+//     meta.style.cssText = "font-size:12px;color:#888;margin-top:4px;";
+//     const related = Array.isArray(item.related) && item.related.length ? " (" + item.related.join(", ") + ")" : "";
+//     meta.textContent = (item.source || "") + " • " + date + related;
+//     body.appendChild(meta);
+
+//     const summary = document.createElement("div");
+//     summary.style.cssText = "margin-top:8px;color:#444;";
+//     summary.textContent = htmlToPlainText(item.summary || "");
+//     body.appendChild(summary);
+
+//     row.appendChild(body);
+//     wrapper.appendChild(row);
+//   });
+
+//   resultElem.appendChild(wrapper);
+// }
+
+// async function showHome() {
   
+//   // clear existing elements
+//   try {
+//     hideStockResult();
+//     hideStockNav();
+//     hideWatchlist();
+//   } catch(e) {
+//     console.log("showHome function; Error clearing existing elements. ", e);
+//   }
 
-  news.forEach((item) => {
-    const row = document.createElement("div");
-    row.className = "news-item";
-    row.style.cssText = "display:flex;gap:12px;padding:12px;border-bottom:1px solid #eee;align-items:flex-start;";
+//   // Fetch and display market status at the top
+//   try {
+//     const exch = "US";
+//     const statusArr = await fetchMarketStatus(exch);
+//     const statusObj =
+//       Array.isArray(statusArr) && statusArr.length ? statusArr[0] : null;
 
-    const imageWrap = document.createElement("div");
-    imageWrap.style.cssText = "flex:0 0 140px;display:flex;align-items:center;justify-content:center;margin-right:12px;";
-    function showNoImagePlaceholder() {
-      imageWrap.replaceChildren();
-      imageWrap.style.background = "#f2f2f2";
-      imageWrap.style.borderRadius = "6px";
-      imageWrap.style.width = "120px";
-      imageWrap.style.height = "80px";
-      imageWrap.style.color = "#999";
-      imageWrap.style.fontSize = "12px";
-      imageWrap.textContent = "No Image";
-    }
-    const imageUrl = getSafeImageUrl(item.image);
-    const articleUrl = item.url && isSafeUrl(item.url) ? item.url.trim() : null;
-    if (imageUrl) {
-      const img = document.createElement("img");
-      img.src = `${API_BASE_URL}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
-      img.alt = "thumb";
-      img.style.cssText = "width:120px;height:80px;object-fit:cover;border-radius:6px;";
-      img.onerror = showNoImagePlaceholder;
-      imageWrap.appendChild(img);
-    } else if (articleUrl) {
-      const img = document.createElement("img");
-      img.src = `${API_BASE_URL}/api/article-thumbnail?url=${encodeURIComponent(articleUrl)}`;
-      img.alt = "thumb";
-      img.style.cssText = "width:120px;height:80px;object-fit:cover;border-radius:6px;";
-      img.onerror = showNoImagePlaceholder;
-      imageWrap.appendChild(img);
-    } else {
-      showNoImagePlaceholder();
-    }
-    row.appendChild(imageWrap);
+//     if (statusObj && typeof statusObj.isOpen !== "undefined") {
+//       const statusDiv = document.createElement("div");
+//       statusDiv.style.cssText = "padding:8px 0 0 0;font-size:1.1em;font-weight:bold;color:#333;";
+//       const openSpan = document.createElement("span");
+//       openSpan.style.color = statusObj.isOpen ? "#27ae60" : "#e74c3c";
+//       openSpan.textContent = statusObj.isOpen ? "OPEN" : "CLOSED";
+//       const sessionSpan = document.createElement("span");
+//       sessionSpan.style.color = "#555";
+//       sessionSpan.textContent = statusObj.session || "";
+//       const dateOptions = { year: "numeric", month: "long", day: "numeric" };
+//       const formattedDate = new Date(statusObj.t * 1000).toLocaleDateString(undefined, dateOptions);
+//       const dateSpan = document.createElement("span");
+//       dateSpan.style.color = "#555";
+//       dateSpan.textContent = formattedDate || "";
+//       statusDiv.appendChild(document.createTextNode(exch + " exchange is "));
+//       statusDiv.appendChild(openSpan);
+//       statusDiv.appendChild(document.createTextNode(" | Session: "));
+//       statusDiv.appendChild(sessionSpan);
+//       statusDiv.appendChild(document.createTextNode(" | "));
+//       statusDiv.appendChild(dateSpan);
+//       resultElem.appendChild(statusDiv);
+//       if (statusObj.holiday) {
+//         const holidayDiv = document.createElement("div");
+//         holidayDiv.textContent = "Holiday: " + statusObj.holiday;
+//         resultElem.appendChild(holidayDiv);
+//       }
+//     }
+//   } catch (err) {
+//     console.log(err);
+//   }
 
-    const body = document.createElement("div");
-    body.style.cssText = "flex:1;min-width:0;";
-
-    const link = document.createElement("a");
-    link.target = "_blank";
-    link.style.cssText = "font-weight:bold;color:#1a0dab;text-decoration:none;display:block;";
-    link.textContent = item.headline || "";
-    if (item.url && isSafeUrl(item.url)) link.href = item.url.trim();
-    body.appendChild(link);
-
-    const date = item.datetime ? new Date(item.datetime * 1000).toLocaleString() : "";
-    const meta = document.createElement("div");
-    meta.style.cssText = "font-size:12px;color:#888;margin-top:4px;";
-    const related = Array.isArray(item.related) && item.related.length ? " (" + item.related.join(", ") + ")" : "";
-    meta.textContent = (item.source || "") + " • " + date + related;
-    body.appendChild(meta);
-
-    const summary = document.createElement("div");
-    summary.style.cssText = "margin-top:8px;color:#444;";
-    summary.textContent = htmlToPlainText(item.summary || "");
-    body.appendChild(summary);
-
-    row.appendChild(body);
-    wrapper.appendChild(row);
-  });
-
-  resultElem.appendChild(wrapper);
-}
-
-async function showHome() {
+//   resultElem.appendChild(document.createElement("br"));
   
-  // clear existing elements
-  try {
-    hideStockResult();
-    hideStockNav();
-    hideWatchlist();
-  } catch(e) {
-    console.log("showHome function; Error clearing existing elements. ", e);
-  }
+//   // Fetch and display market news
+//   try{
+//     let news = "";
+//     news = await fetchMarketNews("general", 0);
+//     renderMarketNews(news);
+//   } catch(err) {
+//     console.log(err);
+//   }
+// }
 
-  // Fetch and display market status at the top
-  try {
-    const exch = "US";
-    const statusArr = await fetchMarketStatus(exch);
-    const statusObj =
-      Array.isArray(statusArr) && statusArr.length ? statusArr[0] : null;
+// // Attach Home tab if present
+// document.getElementById("homeTab")?.addEventListener("click", async (e) => {
+//   e.preventDefault();
+//   await showHome();
+// });
 
-    if (statusObj && typeof statusObj.isOpen !== "undefined") {
-      const statusDiv = document.createElement("div");
-      statusDiv.style.cssText = "padding:8px 0 0 0;font-size:1.1em;font-weight:bold;color:#333;";
-      const openSpan = document.createElement("span");
-      openSpan.style.color = statusObj.isOpen ? "#27ae60" : "#e74c3c";
-      openSpan.textContent = statusObj.isOpen ? "OPEN" : "CLOSED";
-      const sessionSpan = document.createElement("span");
-      sessionSpan.style.color = "#555";
-      sessionSpan.textContent = statusObj.session || "";
-      const dateOptions = { year: "numeric", month: "long", day: "numeric" };
-      const formattedDate = new Date(statusObj.t * 1000).toLocaleDateString(undefined, dateOptions);
-      const dateSpan = document.createElement("span");
-      dateSpan.style.color = "#555";
-      dateSpan.textContent = formattedDate || "";
-      statusDiv.appendChild(document.createTextNode(exch + " exchange is "));
-      statusDiv.appendChild(openSpan);
-      statusDiv.appendChild(document.createTextNode(" | Session: "));
-      statusDiv.appendChild(sessionSpan);
-      statusDiv.appendChild(document.createTextNode(" | "));
-      statusDiv.appendChild(dateSpan);
-      resultElem.appendChild(statusDiv);
-      if (statusObj.holiday) {
-        const holidayDiv = document.createElement("div");
-        holidayDiv.textContent = "Holiday: " + statusObj.holiday;
-        resultElem.appendChild(holidayDiv);
-      }
-    }
-  } catch (err) {
-    console.log(err);
-  }
-
-  resultElem.appendChild(document.createElement("br"));
-  
-  // Fetch and display market news
-  try{
-    let news = "";
-    news = await fetchMarketNews("general", 0);
-    renderMarketNews(news);
-  } catch(err) {
-    console.log(err);
-  }
-}
-
-// Attach Home tab if present
-document.getElementById("homeTab")?.addEventListener("click", async (e) => {
-  e.preventDefault();
-  await showHome();
-});
-
-// Load Market News on initial page load
-showHome();
+// // Load Market News on initial page load
+// showHome();
 
 async function fetchHistoricalData(ticker, range = "6mo", interval = "1d") {
   try {

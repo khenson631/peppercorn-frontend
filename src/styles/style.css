@@ -406,3 +406,91 @@ button:hover {
 @media (max-width: 720px) {
   .watch-header, .watch-row { grid-template-columns: 90px 1fr 90px 90px 80px 48px; font-size: 13px; }
 }
+
+/* --- Home / Market News (from main.js commented block) --- */
+
+/* Market news section wrapper */
+.market-news-wrapper {
+  padding: 8px 0 0 0;
+}
+.market-news-heading {
+  margin: 0 0 8px 0;
+}
+.market-news-empty {
+  padding: 16px;
+  color: #666;
+}
+
+/* News item row */
+.news-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  align-items: flex-start;
+}
+
+/* News item image container */
+.news-item-image-wrap {
+  flex: 0 0 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+.news-item-image-wrap img {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.news-item-image-wrap.no-image {
+  background: #f2f2f2;
+  border-radius: 6px;
+  width: 120px;
+  height: 80px;
+  color: #999;
+  font-size: 12px;
+}
+
+/* News item body (headline, meta, summary) */
+.news-item-body {
+  flex: 1;
+  min-width: 0;
+}
+.news-item-link {
+  font-weight: bold;
+  color: #1a0dab;
+  text-decoration: none;
+  display: block;
+}
+.news-item-meta {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+}
+.news-item-summary {
+  margin-top: 8px;
+  color: #444;
+}
+
+/* Home market status block (showHome) */
+.home-status {
+  padding: 8px 0 0 0;
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #333;
+}
+.home-status .status-open {
+  color: #27ae60;
+}
+.home-status .status-closed {
+  color: #e74c3c;
+}
+.home-status .status-session,
+.home-status .status-date {
+  color: #555;
+}
+.home-holiday {
+  margin-top: 4px;
+}
