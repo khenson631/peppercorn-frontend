@@ -1,5 +1,6 @@
-import { getSafeImageUrl, htmlToPlainText, isSafeUrl } from "./helpers.js";
+import { getSafeImageUrl, htmlToPlainText, isSafeUrl } from "./helpers/helpers.js";
 import { API_BASE_URL } from "./config.js";
+import { ensureAnonId, fetchWatchlistForAnon, addTickerToWatchlist, removeTickerFromWatchlist} from "./helpers/watchlistHelpers.js";
 
 
 //////////////////////////////////////////
@@ -19,6 +20,7 @@ const stockResult = document.getElementById("stockResult"); // or a dedicated #h
 document.getElementById("homeTab")?.addEventListener("click", async () => {
   hideWatchlist();
   hideStockResult(); // or your generic “hide other views”
+  hideStockNav();
   await homePage.mount(stockResult);
 });
 
@@ -26,70 +28,6 @@ document.getElementById("homeTab")?.addEventListener("click", async () => {
 await homePage.mount(stockResult);
 //////////////////////////////////////////
 
-// --- Watchlist / anonymous id helpers (PoC using backend JSON store) ---
-function ensureAnonId() {
-  try {
-    let id = localStorage.getItem("peppercornAnonId");
-    if (!id) {
-      id =
-        "anon-" +
-        Date.now().toString(36) +
-        "-" +
-        Math.random().toString(36).slice(2, 10);
-      localStorage.setItem("peppercornAnonId", id);
-    }
-    return id;
-  } catch (err) {
-    return null;
-  }
-}
-
-async function fetchWatchlistForAnon(anonId) {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/watchlist?anonId=${encodeURIComponent(anonId)}`,
-    );
-    if (!res.ok) throw new Error("failed");
-    const json = await res.json();
-    return Array.isArray(json.symbols) ? json.symbols : [];
-  } catch (err) {
-    return [];
-  }
-}
-
-async function addTickerToWatchlist(anonId, ticker) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/watchlist`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-anon-id": anonId },
-      body: JSON.stringify({ ticker }),
-    });
-    if (!res.ok) throw new Error("add failed");
-    const json = await res.json();
-    return Array.isArray(json.symbols) ? json.symbols : null;
-  } catch (err) {
-    console.error("Add watchlist error", err);
-    return null;
-  }
-}
-
-async function removeTickerFromWatchlist(anonId, ticker) {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/watchlist/${encodeURIComponent(ticker)}`,
-      {
-        method: "DELETE",
-        headers: { "x-anon-id": anonId },
-      },
-    );
-    if (!res.ok) throw new Error("delete failed");
-    const json = await res.json();
-    return Array.isArray(json.symbols) ? json.symbols : null;
-  } catch (err) {
-    console.error("Remove watchlist error", err);
-    return null;
-  }
-}
 
 // --- Autocomplete for ticker input ---
 const tickerInput = document.getElementById("ticker");

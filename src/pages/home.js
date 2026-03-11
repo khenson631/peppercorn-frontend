@@ -1,6 +1,6 @@
 import { fetchMarketStatus } from "../api/marketStatus.js";
 import { fetchMarketNews } from "../api/marketNews.js";
-import { getSafeImageUrl, htmlToPlainText, isSafeUrl } from "../helpers.js";
+import { getSafeImageUrl, htmlToPlainText, isSafeUrl } from "../helpers/helpers.js";
 import { API_BASE_URL } from "../config.js";
 
 /**
