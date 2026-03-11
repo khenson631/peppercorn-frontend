@@ -1,7 +1,3 @@
-import { getSafeImageUrl, htmlToPlainText, isSafeUrl } from "./helpers/helpers.js";
-import { API_BASE_URL } from "./config.js";
-import { ensureAnonId, fetchWatchlistForAnon, addTickerToWatchlist, removeTickerFromWatchlist} from "./helpers/watchlistHelpers.js";
-
 
 //////////////////////////////////////////
 // This file should serve as the launching point for the app.
@@ -10,24 +6,45 @@ import { ensureAnonId, fetchWatchlistForAnon, addTickerToWatchlist, removeTicker
 // The goal is to keep things as modular and maintainable as possible. 
 /////////////////////////////////////////
 
-
 //////////////////////////////////////////
-// Display home page//////////////////////
+// Home page//////////////////////
+import { getSafeImageUrl, htmlToPlainText, isSafeUrl, formatNumber } from "./helpers/helpers.js";
+import { API_BASE_URL } from "./config.js";
+import { ensureAnonId, fetchWatchlistForAnon, addTickerToWatchlist, removeTickerFromWatchlist} from "./helpers/watchlistHelpers.js";
+import * as watchlistPage from "./pages/watchlist.js";
 import * as homePage from "./pages/home.js";
 
-const stockResult = document.getElementById("stockResult"); // or a dedicated #homeContainer
+const stockResult = document.getElementById("stockResult");
+const watchlistContainer = document.getElementById("watchlistContainer");
 
+// Home tab
 document.getElementById("homeTab")?.addEventListener("click", async () => {
-  hideWatchlist();
-  hideStockResult(); // or your generic “hide other views”
+  watchlistPage.unmount(watchlistContainer);
+  document.getElementById("watchlistTab")?.classList.remove("active");
+  hideStockResult();
   hideStockNav();
   await homePage.mount(stockResult);
 });
 
 // Initial load
 await homePage.mount(stockResult);
-//////////////////////////////////////////
 
+// Watchlist tab
+document.getElementById("watchlistTab")?.addEventListener("click", async () => {
+  const tab = document.getElementById("watchlistTab");
+  const isActive = tab?.classList.contains("active");
+  if (isActive) {
+    watchlistPage.unmount(watchlistContainer);
+    tab?.classList.remove("active");
+    return;
+  }
+  hideStockResult();
+  hideStockNav();
+  tab?.classList.add("active");
+  await watchlistPage.mount(watchlistContainer, {
+    onTickerClick: (ticker) => performStockSearch(ticker),
+  });
+});
 
 // --- Autocomplete for ticker input ---
 const tickerInput = document.getElementById("ticker");
@@ -139,7 +156,7 @@ let chart, candleSeries;
 let currentRange = { range: "1y", interval: "1d" };
 let lastTicker = "";
 let resizeObserver = null;
-let customInterval = null; // Track if user has manually selected an interval
+let customInterval = null;
 
 // Define valid interval combinations for each range
 const VALID_INTERVALS_FOR_RANGE = {
@@ -158,7 +175,6 @@ const VALID_INTERVALS_FOR_RANGE = {
 // Get all available intervals
 const ALL_INTERVALS = ["1m", "5m", "15m", "30m", "1h", "1d", "1wk", "1mo"];
 
-// by default hide the stock chart
 if (stockChart) {
   stockChart.style.display = "none";
 }
@@ -564,7 +580,6 @@ function updateIntervalDropdownOptions(range) {
 async function updateChartForTickerAndRange(ticker, range, interval) {
   setActiveRangeLabel(range, interval);
   const ohlcData = await fetchHistoricalData(ticker, range, interval);
-  // console.log(ohlcData);
   renderStockChart(ohlcData);
 }
 
@@ -573,7 +588,8 @@ async function performStockSearch(ticker) {
 
   // Ensure watchlist view is hidden when performing a normal stock search
   try {
-    hideWatchlist();
+    watchlistPage.unmount(watchlistContainer);
+    document.getElementById("watchlistTab")?.classList.remove("active");
   } catch (e) {
     /* ignore if not initialized yet */
   }
@@ -615,7 +631,6 @@ async function performStockSearch(ticker) {
 
     function loadProfileTab() {
       hideStockResult();
-      // fetchProfileData(ticker);
       fillStockResultData(data, profileData);
     }
     /////////////////////////
@@ -645,7 +660,6 @@ async function performStockSearch(ticker) {
             btn.innerHTML = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .587l3.668 7.431L23 9.748l-5.5 5.362L18.335 24 12 20.013 5.665 24 6.5 15.11 1 9.748l7.332-1.73L12 .587z"/></svg>`;
             btn.addEventListener("click", async (e) => {
               e.preventDefault();
-              // optimistic toggle
               const currently = btn.classList.contains("filled");
               if (currently) {
                 btn.classList.remove("filled");
@@ -775,193 +789,6 @@ async function fetchProfileData(ticker) {
   }
 }
 
-// --- Watchlist UI: fetch, render, and interactions (modular & reusable) ---
-
-/**
- * Parses an HTML string into a single DOM element.
- * @param {string} html - Must be trusted or pre-sanitized HTML. Do not pass user or API content (XSS risk).
- * @returns {Element|null} The first child element, or null.
- */
-function createElementFromHTML(html) {
-  const template = document.createElement("template");
-  template.innerHTML = html.trim();
-  return template.content.firstChild;
-}
-
-async function fetchWatchlistWithScores(anonId) {
-  // Returns array of { ticker, companyName, currentPrice, dailyChange, dailyChangePercent }
-  try {
-    const symbols = await fetchWatchlistForAnon(anonId);
-    if (!Array.isArray(symbols) || symbols.length === 0) return [];
-
-    const fetchScore = async (sym) => {
-      try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/score/${encodeURIComponent(sym)}`,
-        );
-        if (!res.ok) throw new Error("score fetch failed");
-        const json = await res.json();
-        return {
-          ticker: (json.ticker || sym).toUpperCase(),
-          companyName:
-            json.companyName ||
-            json.companyName ||
-            (json.label ? json.label : sym),
-          currentPrice:
-            typeof json.currentPrice === "number" ? json.currentPrice : null,
-          dailyChange:
-            typeof json.dailyChange === "number" ? json.dailyChange : null,
-          dailyChangePercent:
-            typeof json.dailyChangePercent === "number"
-              ? json.dailyChangePercent
-              : null,
-        };
-      } catch (err) {
-        return {
-          ticker: String(sym).toUpperCase(),
-          companyName: sym,
-          currentPrice: null,
-          dailyChange: null,
-          dailyChangePercent: null,
-        };
-      }
-    };
-
-    const promises = symbols.map((s) => fetchScore(s));
-    const results = await Promise.all(promises);
-    // Sort alphabetically by ticker
-    results.sort((a, b) => a.ticker.localeCompare(b.ticker));
-    return results;
-  } catch (err) {
-    console.error("Error fetching watchlist with scores", err);
-    return [];
-  }
-}
-
-function formatNumber(n) {
-  if (n === null || n === undefined) return "—";
-  return n.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
-function renderWatchlistRows(items) {
-  if (!Array.isArray(items) || items.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "watch-empty";
-    empty.textContent = "No tickers in your Watchlist. Star a ticker to add it.";
-    return empty;
-  }
-
-  const table = document.createElement("div");
-  table.className = "watchlist-table";
-  const header = document.createElement("div");
-  header.className = "watch-header";
-  [
-    { text: "Ticker", cls: "ticker" },
-    { text: "Name", cls: "name" },
-    { text: "Price", cls: "price" },
-    { text: "$ Change", cls: "change" },
-    { text: "% Change", cls: "changePct" },
-    { text: "", cls: "action" },
-  ].forEach(({ text, cls }) => {
-    const col = document.createElement("div");
-    col.className = "col " + cls;
-    col.textContent = text;
-    header.appendChild(col);
-  });
-  table.appendChild(header);
-  const rowsWrap = document.createElement("div");
-  rowsWrap.className = "watch-rows";
-  items.forEach((item) => {
-    const sign = item.dailyChange > 0 ? "+" : "";
-    const changeClass = item.dailyChange > 0 ? "pos" : item.dailyChange < 0 ? "neg" : "neutral";
-    const row = document.createElement("div");
-    row.className = "watch-row";
-    row.dataset.ticker = item.ticker;
-    const tickerCol = document.createElement("div");
-    tickerCol.className = "col ticker";
-    const strong = document.createElement("strong");
-    strong.textContent = item.ticker;
-    tickerCol.appendChild(strong);
-    row.appendChild(tickerCol);
-    const nameCol = document.createElement("div");
-    nameCol.className = "col name";
-    nameCol.textContent = item.companyName || "";
-    row.appendChild(nameCol);
-    const priceCol = document.createElement("div");
-    priceCol.className = "col price";
-    priceCol.textContent = item.currentPrice !== null ? formatNumber(item.currentPrice) : "—";
-    row.appendChild(priceCol);
-    const changeCol = document.createElement("div");
-    changeCol.className = "col change " + changeClass;
-    changeCol.textContent = item.dailyChange !== null ? sign + formatNumber(item.dailyChange) : "—";
-    row.appendChild(changeCol);
-    const changePctCol = document.createElement("div");
-    changePctCol.className = "col changePct " + changeClass;
-    changePctCol.textContent = item.dailyChangePercent !== null ? sign + item.dailyChangePercent.toFixed(2) + "%" : "—";
-    row.appendChild(changePctCol);
-    const actionCol = document.createElement("div");
-    actionCol.className = "col action";
-    const btn = document.createElement("button");
-    btn.className = "row-star";
-    btn.setAttribute("aria-label", "Remove from watchlist");
-    btn.textContent = "✕";
-    actionCol.appendChild(btn);
-    row.appendChild(actionCol);
-    rowsWrap.appendChild(row);
-  });
-  table.appendChild(rowsWrap);
-  return table;
-}
-
-async function refreshWatchlistView() {
-  const container = document.getElementById("watchlistContainer");
-  if (!container) return;
-  container.innerHTML = '<div class="watch-loading">Loading watchlist…</div>';
-  const anonId = ensureAnonId();
-  const data = anonId ? await fetchWatchlistWithScores(anonId) : [];
-  container.replaceChildren();
-  container.appendChild(renderWatchlistRows(data));
-
-  // Re-attach ticker search listener after rendering new rows
-  searchStockFromWatchlist();
-
-  // attach row star handlers
-  container.querySelectorAll(".row-star").forEach((btn) => {
-    btn.addEventListener("click", async (e) => {
-      const row = e.target.closest(".watch-row");
-      if (!row) return;
-      const ticker = row.dataset.ticker;
-      const anonIdLocal = ensureAnonId();
-      // optimistic remove
-      row.style.opacity = "0.5";
-      const updated = await removeTickerFromWatchlist(anonIdLocal, ticker);
-      if (updated === null) {
-        row.style.opacity = "1";
-        alert("Failed to remove from watchlist");
-      } else {
-        await refreshWatchlistView();
-      }
-    });
-  });
-}
-
-function showWatchlist() {
-  const result = document.getElementById("stockResult");
-  const watch = document.getElementById("watchlistContainer");
-  if (result) result.style.display = "none";
-  if (watch) watch.style.display = "block";
-  document.getElementById("watchlistTab")?.classList.add("active");
-}
-
-function hideWatchlist() {
-  const watch = document.getElementById("watchlistContainer");
-  if (watch) watch.style.display = "none";
-  document.getElementById("watchlistTab")?.classList.remove("active");
-}
-
 function hideStockResult() {
   const stockResult = document.getElementById("stockResult");
   if (stockResult) {
@@ -975,33 +802,6 @@ function hideStockNav() {
   if (stockNavBar) {
     stockNavBar.style.display = 'none';
   }
-}
-
-document
-  .getElementById("watchlistTab")
-  ?.addEventListener("click", async (e) => {
-    const tab = e.currentTarget;
-    const isActive = tab.classList.contains("active");
-    if (isActive) {
-      hideWatchlist();
-      return;
-    }
-    showWatchlist();
-    await refreshWatchlistView();
-    searchStockFromWatchlist();
-  });
-
-// --- Trigger search on clicking ticker from watchlist ---
-function searchStockFromWatchlist() {
-  const watchTable = document.querySelector(".watchlist-table");
-  if (!watchTable) return;
-
-  watchTable.addEventListener("click", function (e) {
-    const ticker = e.target.closest(".col.ticker");
-    if (!ticker) return;
-
-    performStockSearch(ticker.textContent.trim());
-  });
 }
 
 // Format stockresult navbar
