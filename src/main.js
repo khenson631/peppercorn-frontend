@@ -6,13 +6,13 @@
 // The goal is to keep things as modular and maintainable as possible. 
 /////////////////////////////////////////
 
-//////////////////////////////////////////
-// Home page//////////////////////
+// Home page
 import { getSafeImageUrl, htmlToPlainText, isSafeUrl, formatNumber } from "./helpers/helpers.js";
 import { API_BASE_URL } from "./config.js";
 import { ensureAnonId, fetchWatchlistForAnon, addTickerToWatchlist, removeTickerFromWatchlist} from "./helpers/watchlistHelpers.js";
 import * as watchlistPage from "./pages/watchlist.js";
 import * as homePage from "./pages/home.js";
+import { init as initSearchBar } from "./components/searchBar.js";
 
 const stockResult = document.getElementById("stockResult");
 const watchlistContainer = document.getElementById("watchlistContainer");
@@ -46,110 +46,17 @@ document.getElementById("watchlistTab")?.addEventListener("click", async () => {
   });
 });
 
-// --- Autocomplete for ticker input ---
-const tickerInput = document.getElementById("ticker");
-const suggestionsList = document.getElementById("tickerSuggestions");
+// --- Search bar (autocomplete + Enter + icon click) ---
+const searchBar = initSearchBar({
+  inputEl: document.getElementById("ticker"),
+  suggestionsEl: document.getElementById("tickerSuggestions"),
+  searchIconEl: document.querySelector(".search-icon"),
+  onSearch: (ticker) => performStockSearch(ticker),
+});
+
 const resultElem = document.getElementById("stockResult");
 const stockChart = document.getElementById("stockChart");
-let suggestions = [];
-let activeIndex = -1;
-let debounceTimeout = null;
 let isFirstSearch = true;
-
-function clearSuggestions() {
-  suggestionsList.textContent = "";
-  suggestionsList.style.display = "none";
-  suggestions = [];
-  activeIndex = -1;
-}
-
-function renderSuggestions() {
-  if (!suggestions.length) {
-    clearSuggestions();
-    return;
-  }
-  suggestionsList.replaceChildren();
-  suggestions.forEach((item, idx) => {
-    const div = document.createElement("div");
-    div.className = "suggestion-item" + (idx === activeIndex ? " active" : "");
-    div.dataset.idx = String(idx);
-    const strong = document.createElement("strong");
-    strong.textContent = item.symbol;
-    const span = document.createElement("span");
-    span.style.color = "#888";
-    span.textContent = item.name;
-    div.appendChild(strong);
-    div.appendChild(document.createTextNode(" "));
-    div.appendChild(span);
-    suggestionsList.appendChild(div);
-  });
-  suggestionsList.style.display = "block";
-}
-
-function fetchSuggestions(query) {
-  if (!query || query.length < 1) {
-    clearSuggestions();
-    return;
-  }
-  fetch(`${API_BASE_URL}/api/search/${encodeURIComponent(query)}`)
-    .then((res) => res.json())
-    .then((data) => {
-      suggestions = data.suggestions || [];
-      activeIndex = -1;
-      renderSuggestions();
-    })
-    .catch(() => clearSuggestions());
-}
-
-tickerInput.addEventListener("input", (e) => {
-  const value = e.target.value.trim();
-  clearTimeout(debounceTimeout);
-  debounceTimeout = setTimeout(() => fetchSuggestions(value), 250);
-});
-
-tickerInput.addEventListener("keydown", (e) => {
-  if (!suggestions.length) return;
-  if (e.key === "ArrowDown") {
-    activeIndex = (activeIndex + 1) % suggestions.length;
-    renderSuggestions();
-    e.preventDefault();
-  } else if (e.key === "ArrowUp") {
-    activeIndex = (activeIndex - 1 + suggestions.length) % suggestions.length;
-    renderSuggestions();
-    e.preventDefault();
-  } else if (e.key === "Enter") {
-    if (activeIndex >= 0 && activeIndex < suggestions.length) {
-      tickerInput.value = suggestions[activeIndex].symbol;
-      clearSuggestions();
-      e.preventDefault();
-    }
-  } else if (e.key === "Escape") {
-    clearSuggestions();
-  }
-});
-
-// Search ticker on click
-suggestionsList.addEventListener("click", (e) => {
-  const item = e.target.closest(".suggestion-item");
-  if (item) {
-    e.preventDefault();
-    e.stopPropagation();
-    const idx = parseInt(item.getAttribute("data-idx"), 10);
-    if (idx >= 0 && idx < suggestions.length) {
-      tickerInput.value = suggestions[idx].symbol;
-      clearSuggestions();
-      tickerInput.focus();
-      const ticker = document.getElementById("ticker").value;
-      performStockSearch(ticker);
-    }
-  }
-});
-
-document.addEventListener("click", (e) => {
-  if (!suggestionsList.contains(e.target) && e.target !== tickerInput) {
-    clearSuggestions();
-  }
-});
 
 // --- TradingView Chart Integration ---
 let chart, candleSeries;
@@ -762,20 +669,6 @@ async function performStockSearch(ticker) {
     isFirstSearch = false;
   }
 }
-
-// --- Trigger search on Enter in input ---
-document.getElementById("ticker").addEventListener("keydown", function (e) {
-  if (e.key === "Enter") {
-    const ticker = document.getElementById("ticker").value;
-    performStockSearch(ticker);
-  }
-});
-
-// --- Trigger search on clicking the magnifying glass icon ---
-document.querySelector(".search-icon").addEventListener("click", function () {
-  const ticker = document.getElementById("ticker").value;
-  performStockSearch(ticker);
-});
 
 // Get Profile Data
 async function fetchProfileData(ticker) {
