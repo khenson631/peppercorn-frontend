@@ -1,6 +1,6 @@
-import { API_BASE_URL } from "../config.js";
 import { formatNumber } from "../helpers/helpers.js";
 import { ensureAnonId, fetchWatchlistForAnon, removeTickerFromWatchlist } from "../helpers/watchlistHelpers.js";
+import { fetchScore } from "../api/score.js";
 
 let onTickerClick = null;
 
@@ -29,13 +29,9 @@ async function fetchWatchlistWithScores(anonId) {
     const symbols = await fetchWatchlistForAnon(anonId);
     if (!Array.isArray(symbols) || symbols.length === 0) return [];
 
-    const fetchScore = async (sym) => {
+    const fetchScoreForRow = async (sym) => {
       try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/score/${encodeURIComponent(sym)}`,
-        );
-        if (!res.ok) throw new Error("score fetch failed");
-        const json = await res.json();
+        const json = await fetchScore(sym);
         return {
           ticker: (json.ticker || sym).toUpperCase(),
           companyName: json.companyName || (json.label ? json.label : sym),
@@ -54,7 +50,7 @@ async function fetchWatchlistWithScores(anonId) {
       }
     };
 
-    const results = await Promise.all(symbols.map(fetchScore));
+    const results = await Promise.all(symbols.map(fetchScoreForRow));
     results.sort((a, b) => a.ticker.localeCompare(b.ticker));
     return results;
   } catch (err) {

@@ -8,7 +8,9 @@
 
 // Home page
 import { getSafeImageUrl, htmlToPlainText, isSafeUrl, formatNumber } from "./helpers/helpers.js";
-import { API_BASE_URL } from "./config.js";
+import { fetchScore } from "./api/score.js";
+import { fetchProfile } from "./api/profile.js";
+import { fetchHistory } from "./api/history.js";
 import { ensureAnonId, fetchWatchlistForAnon, addTickerToWatchlist, removeTickerFromWatchlist} from "./helpers/watchlistHelpers.js";
 import * as watchlistPage from "./pages/watchlist.js";
 import * as homePage from "./pages/home.js";
@@ -125,19 +127,6 @@ function showRangeLabels() {
 }
 
 hideRangeLabels();
-
-async function fetchHistoricalData(ticker, range = "6mo", interval = "1d") {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/history/${ticker}?range=${range}&interval=${interval}`,
-    );
-    const json = await res.json();
-    if (!json.data || !json.data.length) throw new Error("No chart data");
-    return json.data.map((bar) => ({ ...bar, time: bar.time }));
-  } catch (err) {
-    return [];
-  }
-}
 
 // Helper to get range selector HTML
 function getRangeSelectorHTML() {
@@ -486,7 +475,7 @@ function updateIntervalDropdownOptions(range) {
 
 async function updateChartForTickerAndRange(ticker, range, interval) {
   setActiveRangeLabel(range, interval);
-  const ohlcData = await fetchHistoricalData(ticker, range, interval);
+  const ohlcData = await fetchHistory(ticker, range, interval);
   renderStockChart(ohlcData);
 }
 
@@ -520,9 +509,8 @@ async function performStockSearch(ticker) {
     return;
   }
   try {
-    const res = await fetch(`${API_BASE_URL}/api/score/${ticker}`);
-    const data = await res.json();
-    const profileData = await fetchProfileData(ticker);
+    const data = await fetchScore(ticker);
+    const profileData = await fetchProfile(ticker);
 
     formatStockNavBar();
 
@@ -667,18 +655,6 @@ async function performStockSearch(ticker) {
     hideRangeLabels();
     // Mark that we've completed at least one search attempt
     isFirstSearch = false;
-  }
-}
-
-// Get Profile Data
-async function fetchProfileData(ticker) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/profile/${ticker}`);
-    const profileData = await res.json();
-    return profileData;
-  } catch (err) {
-    console.error("Error fetching profile:", err);
-    return null;
   }
 }
 
