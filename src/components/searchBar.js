@@ -73,6 +73,7 @@ export function init({ inputEl, suggestionsEl, searchIconEl, onSearch }) {
       // Let Enter fall through to trigger search even with no suggestions
       if (e.key === "Enter") {
         onSearch(inputEl.value.trim());
+        clearSearchBar();
       }
       return;
     }
@@ -91,6 +92,7 @@ export function init({ inputEl, suggestionsEl, searchIconEl, onSearch }) {
         e.preventDefault();
       }
       onSearch(inputEl.value.trim());
+      clearSearchBar();
     } else if (e.key === "Escape") {
       clearSuggestions();
     }
@@ -108,6 +110,7 @@ export function init({ inputEl, suggestionsEl, searchIconEl, onSearch }) {
         clearSuggestions();
         inputEl.focus();
         onSearch(inputEl.value.trim());
+        clearSearchBar();
       }
     }
   }
@@ -122,6 +125,7 @@ export function init({ inputEl, suggestionsEl, searchIconEl, onSearch }) {
   // Click on the magnifying glass icon
   function onSearchIconClick() {
     onSearch(inputEl.value.trim());
+    clearSearchBar();
   }
 
   // --- Attach listeners ---
@@ -142,4 +146,9 @@ export function init({ inputEl, suggestionsEl, searchIconEl, onSearch }) {
       searchIconEl.removeEventListener("click", onSearchIconClick);
     },
   };
+
+  function clearSearchBar() {
+    inputEl.value = '';
+  }
+
 }
