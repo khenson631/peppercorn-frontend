@@ -252,8 +252,8 @@ button:hover {
   margin-top: auto;
 }
 #ticker::placeholder {
-  color: #000;
-  opacity: 1;
+  color: #000000;
+  opacity: .5;
   font-weight: bold;
 }
 @media (max-width: 768px) {
