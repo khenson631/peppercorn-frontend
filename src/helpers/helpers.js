@@ -54,3 +54,27 @@ export function formatNumber(n) {
     maximumFractionDigits: 2,
   });
 }
+
+/**
+ * Market time display string in EST (open: "As of H:MM:SS AM/PM EST", closed: "At close 4:00:00 PM EST").
+ * @returns {string}
+ */
+export function getMarketTimeDisplay() {
+  const now = new Date();
+  const estTime = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/New_York" }),
+  );
+  const hours = estTime.getHours();
+  const minutes = estTime.getMinutes();
+  const seconds = estTime.getSeconds();
+  const isMarketOpen =
+    hours >= 9 && hours < 16 && !(hours === 9 && minutes < 30);
+  if (isMarketOpen) {
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = String(minutes).padStart(2, "0");
+    const displaySeconds = String(seconds).padStart(2, "0");
+    return `As of ${displayHours}:${displayMinutes}:${displaySeconds} ${ampm} EST`;
+  }
+  return "At close 4:00:00 PM EST";
+}
