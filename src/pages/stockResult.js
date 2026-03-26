@@ -390,6 +390,7 @@ function formatStockNavBar() {
       });
       subnav.parentNode.insertBefore(stockNavBar, subnav.nextSibling);
     }
+    showStockNav();
   } catch (err) {
     console.log(err);
   }
@@ -398,6 +399,11 @@ function formatStockNavBar() {
 function hideStockNav() {
   const stockNavBar = document.getElementById("stockNavBar");
   if (stockNavBar) stockNavBar.style.display = "none";
+}
+
+function showStockNav() {
+  const stockNavBar = document.getElementById("stockNavBar");
+  if (stockNavBar) stockNavBar.style.removeProperty("display");
 }
 
 /**
@@ -447,9 +453,8 @@ export async function mount(container, ticker) {
     const profileBtn = document.querySelector("#profileBtn");
     if (profileBtn) {
       profileBtn.addEventListener("click", () => {
-        container.style.display = "none";
-        container.textContent = "";
-        fillStockResultData(data, profileData);
+        // alert('profile button clicked');
+        // const resultContainer = document.querySelector("#resultContainer");
       });
     }
 
