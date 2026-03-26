@@ -37,7 +37,10 @@ document.getElementById("watchlistTab")?.addEventListener("click", async () => {
   stockResultPage.unmount(stockResult);
   tab?.classList.add("active");
   await watchlistPage.mount(watchlistContainer, {
-    onTickerClick: (ticker) => stockResultPage.mount(stockResult, ticker),
+    onTickerClick: (ticker) => {
+      stockResultPage.mount(stockResult, ticker);
+      watchlistPage.unmount(watchlistContainer);
+    }      
   });
 });
 
