@@ -436,24 +436,7 @@ function formatStockNavBar() {
 
       const id = btn.id;
 
-      activateStockTab(id);
-
-      // if (id === "summarBtn") { 
-      //    /* show summary panel */ 
-      //    toggleStockSummaryHidden(false);
-      //    handleStockNavButtonActiveStates(id);
-      //    return; 
-      // }
-      
-      // if (id === "profileBtn") { 
-      //   /* show profile panel */ 
-      //   showStockProfile();
-      //   toggleStockSummaryHidden(true);
-      //   handleStockNavButtonActiveStates(id);
-      //   return; 
-      // }
-      
-        // …newsBtn, financialsBtn, analysisBtn    })
+      activateStockTab(id); // Call the function that activates the desired tab
     });
     stockNavBar.dataset.delegationBound = "1";
   }
@@ -476,7 +459,6 @@ function handleStockNavButtonActiveStates(activeBtnId) {
 
   buttons.forEach((button) => {
     if (button.id === activeBtnId) {
-      // button.active = true;
       button.classList.add('active');
     } else {
       button.classList.remove('active');
@@ -504,21 +486,6 @@ function activateStockTab(activeButtonID) {
   panelToShow.hidden = false;
   handleStockNavButtonActiveStates(activeButtonID);
 }
-
-//function showStockSummary() {
-// function toggleStockSummaryHidden(value) {
-//   const stockSummary = document.getElementById("stockSummary");
-//   if (stockSummary) {
-//     stockSummary.hidden = value;
-//   }
-// }
-
-// function showStockProfile() {
-//   const stockProfile = document.getElementById("stockProfilePanel");
-//   if (stockProfile) {
-//     stockProfile.hidden = false;
-//   }
-// }
 
 /**
  * Unmount the stock result view: hide container and stock nav bar.
@@ -569,6 +536,7 @@ export async function mount(container, ticker) {
       container.innerHTML = getStockResultStaticHTML();
       fillStockResultData(data, profileData);
       activateStockTab("summarBtn");
+      fillProfileDetailBody(profileData, data);
 
       setTimeout(async () => {
         try {
@@ -652,4 +620,28 @@ export async function mount(container, ticker) {
     hideRangeLabels();
     isFirstSearch = false;
   }
+}
+
+function fillProfileDetailBody(profileData, data) {
+  const root = document.getElementById("profileDetailBody");
+  if (!root) return;
+
+  const n = (x) => (x != null && x !== "" ? x : "N/A");
+  const lines = [
+    ["Company", n(profileData?.name || data?.companyName)],
+    ["Industry", n(profileData?.finnhubIndustry)],
+    ["Country", n(profileData?.country)],
+    ["Market cap", profileData?.marketCapitalization != null ? profileData.marketCapitalization.toLocaleString('en-us',{
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) : "N/A"],
+    ["Website", profileData?.weburl || "N/A"],
+  ];
+
+  root.replaceChildren();
+  lines.forEach(([label, val]) => {
+    const row = document.createElement("div");
+    row.textContent = `${label}: ${val}`;
+    root.appendChild(row);
+  });
 }
