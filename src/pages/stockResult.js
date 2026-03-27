@@ -73,82 +73,84 @@ function getChartContainerHTML() {
 
 function getStockResultStaticHTML() {
   return `
+  <div id="stockSummary">  
     <div id="tickerHeader" style="font-size: 2em; font-weight: bold; margin-bottom: .5em; border-bottom: 1px solid gray; padding-bottom: .25em; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
-      <div><strong id="p-companyName"></strong> (<span id="p-ticker"></span>)
-      <br>
-      <span id="p-currentPrice" style="font-size:.85em"></span> <span id="p-dailyChange" style="font-size: 0.7em"></span>
-      <br>
-      <span id="p-marketTime" style="font-size:.44em"></span></div>
-    </div>
-    <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;" id="chartContainer">
-      ${getRangeSelectorHTML()}
-      ${getChartContainerHTML()}
-    </div>
-    <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
-      <div style="flex: 1; min-width: 300px;">
-        <div id="stockInfoContainer">
-          <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
-            <strong id="p-label"></strong> <span id="p-confidence"></span>
+        <div><strong id="p-companyName"></strong> (<span id="p-ticker"></span>)
+        <br>
+        <span id="p-currentPrice" style="font-size:.85em"></span> <span id="p-dailyChange" style="font-size: 0.7em"></span>
+        <br>
+        <span id="p-marketTime" style="font-size:.44em"></span></div>
+      </div>
+      <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;" id="chartContainer">
+        ${getRangeSelectorHTML()}
+        ${getChartContainerHTML()}
+      </div>
+      <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 300px;">
+          <div id="stockInfoContainer">
+            <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+              <strong id="p-label"></strong> <span id="p-confidence"></span>
+            </div>
+            <div style="margin-bottom: 8px;" id="p-currentPriceLine"></div>
+            <div style="margin-bottom: 8px;" id="p-dailyChangeLine"></div>
+            <div style="font-size: 14px; color: #555; margin-bottom: 8px;" id="p-sentimentLine"></div>
           </div>
-          <div style="margin-bottom: 8px;" id="p-currentPriceLine"></div>
-          <div style="margin-bottom: 8px;" id="p-dailyChangeLine"></div>
-          <div style="font-size: 14px; color: #555; margin-bottom: 8px;" id="p-sentimentLine"></div>
-        </div>
-        <h3 class="sectionHeader">Key Stats</h3>
-        <div style="font-size: 14px; color: #555; margin-bottom: 16px; display:flex; justify-content: space-evenly;" id="keyStats">
-          <div id="keyStatsLeftSide" style="display: flex; flex-direction: column; flex: 1;">
-            <div id="keyStat-exchange" style="display: inline;"></div>
-            <div id="keyStat-previousClose" style="display: inline;"></div>
-            <div id="keyStat-highPrice" style="display: inline;"></div>
-            <div id="keyStat-lowPrice" style="display: inline;"></div>
+          <h3 class="sectionHeader">Key Stats</h3>
+          <div style="font-size: 14px; color: #555; margin-bottom: 16px; display:flex; justify-content: space-evenly;" id="keyStats">
+            <div id="keyStatsLeftSide" style="display: flex; flex-direction: column; flex: 1;">
+              <div id="keyStat-exchange" style="display: inline;"></div>
+              <div id="keyStat-previousClose" style="display: inline;"></div>
+              <div id="keyStat-highPrice" style="display: inline;"></div>
+              <div id="keyStat-lowPrice" style="display: inline;"></div>
+            </div>
+            <div id="keyStatsRightSide" style="display: flex; flex-direction: column; flex: 1;">
+              <div id="keyStat-openPrice" style="display: inline;"></div>
+              <div id="keyStat-52Week" style="display: inline;"></div>
+            </div>
           </div>
-          <div id="keyStatsRightSide" style="display: flex; flex-direction: column; flex: 1;">
-            <div id="keyStat-openPrice" style="display: inline;"></div>
-            <div id="keyStat-52Week" style="display: inline;"></div>
-          </div>
-        </div>
-        <h3 class="sectionHeader">Basic Financials</h3>
-        <div style="font-size: 14px; color: #555; display:flex; justify-content: space-betwen;" id="basicFinancials">
-          <div id="basicFinancialsLeftSide" style="display:flex; flex-direction: column; flex: 1;">
-            <div id="bf-revenuePerShare" style="display: inline;"></div>
-            <div id="bf-earningsPerShare" style="display: inline;"></div>
-            <div id="bf-currentRatio" style="display: inline;"></div>
-            <div id="bf-priceToEarnings" style="display: inline;"></div>
-          </div>
-          <div id="basicFinancialsRightSide" style="display:flex; flex-direction: column; flex: 1;">
-            <div id="bf-dividendYield" style="display: inline;"></div>
-            <div id="bf-returnOnEquity" style="display: inline;"></div>
-            <div id="bf-profitMargin" style="display: inline;"></div>
-            <div id="bf-epsAnnual" style="display: inline;"></div>
+          <h3 class="sectionHeader">Basic Financials</h3>
+          <div style="font-size: 14px; color: #555; display:flex; justify-content: space-betwen;" id="basicFinancials">
+            <div id="basicFinancialsLeftSide" style="display:flex; flex-direction: column; flex: 1;">
+              <div id="bf-revenuePerShare" style="display: inline;"></div>
+              <div id="bf-earningsPerShare" style="display: inline;"></div>
+              <div id="bf-currentRatio" style="display: inline;"></div>
+              <div id="bf-priceToEarnings" style="display: inline;"></div>
+            </div>
+            <div id="basicFinancialsRightSide" style="display:flex; flex-direction: column; flex: 1;">
+              <div id="bf-dividendYield" style="display: inline;"></div>
+              <div id="bf-returnOnEquity" style="display: inline;"></div>
+              <div id="bf-profitMargin" style="display: inline;"></div>
+              <div id="bf-epsAnnual" style="display: inline;"></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <h3 class="sectionHeader">Insider Sentiment</h3>
-    <div id="insiderSentimentSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
-      <p>The Insider Buy/Sell Ratio for the USA's overall market quantifies the transactions of insider purchases to sales by corporate insiders. It is calculated by dividing the number of purchase transactions by the number of sale transactions conducted by insiders. This ratio serves as a barometer of insiders' confidence in the market, with a higher ratio indicating optimism and a lower ratio suggesting potential pessimism about future market conditions. (Monthly data, but only months with insider activity are displayed.)</p>
-      <div id="insiderSentimentList" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;"></div>
-    </div>
-    <h3 class="sectionHeader">Recent Insider Transactions</h3>
-    <div id="insiderTransactionsSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
-      <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-          <thead>
-            <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
-              <th style="padding: 8px; text-align: left; font-weight: bold;">Name</th>
-              <th style="padding: 8px; text-align: center; font-weight: bold;">Shares After Transaction</th>
-              <th style="padding: 8px; text-align: center; font-weight: bold;">Price</th>
-              <th style="padding: 8px; text-align: center; font-weight: bold;">Change in Shares</th>
-              <th style="padding: 8px; text-align: center; font-weight: bold;">Date</th>
-            </tr>
-          </thead>
-          <tbody id="insiderTransactionsBody"></tbody>
-        </table>
+      <h3 class="sectionHeader">Insider Sentiment</h3>
+      <div id="insiderSentimentSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
+        <p>The Insider Buy/Sell Ratio for the USA's overall market quantifies the transactions of insider purchases to sales by corporate insiders. It is calculated by dividing the number of purchase transactions by the number of sale transactions conducted by insiders. This ratio serves as a barometer of insiders' confidence in the market, with a higher ratio indicating optimism and a lower ratio suggesting potential pessimism about future market conditions. (Monthly data, but only months with insider activity are displayed.)</p>
+        <div id="insiderSentimentList" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;"></div>
       </div>
+      <h3 class="sectionHeader">Recent Insider Transactions</h3>
+      <div id="insiderTransactionsSection" style="font-size: 14px; color: #555; margin-bottom: 16px;">
+        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+              <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+                <th style="padding: 8px; text-align: left; font-weight: bold;">Name</th>
+                <th style="padding: 8px; text-align: center; font-weight: bold;">Shares After Transaction</th>
+                <th style="padding: 8px; text-align: center; font-weight: bold;">Price</th>
+                <th style="padding: 8px; text-align: center; font-weight: bold;">Change in Shares</th>
+                <th style="padding: 8px; text-align: center; font-weight: bold;">Date</th>
+              </tr>
+            </thead>
+            <tbody id="insiderTransactionsBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <h3 class="sectionHeader">Latest News</h3>
+      <div id="newsFeed"></div>
     </div>
-    <h3 class="sectionHeader">Latest News</h3>
-    <div id="newsFeed"></div>
-  `;
+    `;
 }
 
 function setElText(id, text) {
@@ -394,6 +396,32 @@ function formatStockNavBar() {
   } catch (err) {
     console.log(err);
   }
+
+  const stockNavBar = document.getElementById("stockNavBar");
+  if (stockNavBar && !stockNavBar.dataset.delegationBound) {
+    stockNavBar.addEventListener("click", (e) => {
+      const btn = e.target.closest("button.tab-btn");
+      if (!btn || !stockNavBar.contains(btn)) return;
+
+      const id = btn.id;
+      if (id === "summarBtn") { 
+         /* show summary panel */ 
+         showStockSummary();
+         handleStockNavButtonActiveStates(id);
+         return; 
+      }
+      
+      if (id === "profileBtn") { 
+        /* show profile panel */ 
+        showStockProfile();
+        handleStockNavButtonActiveStates(id);
+        return; 
+      }
+      
+        // …newsBtn, financialsBtn, analysisBtn    })
+    });
+    stockNavBar.dataset.delegationBound = "1";
+  }
 }
 
 function hideStockNav() {
@@ -404,6 +432,40 @@ function hideStockNav() {
 function showStockNav() {
   const stockNavBar = document.getElementById("stockNavBar");
   if (stockNavBar) stockNavBar.style.removeProperty("display");
+}
+
+function handleStockNavButtonActiveStates(activeBtnId) {
+  const stockNavBar = document.getElementById("stockNavBar");
+  const buttons = stockNavBar.querySelectorAll('button');
+
+  buttons.forEach((button) => {
+    if (button.id === activeBtnId) {
+      // button.active = true;
+      button.classList.add('active');
+    } else {
+      button.classList.remove('active');
+    }
+  }) 
+}
+
+/**
+ * Functions to show the different panels after clicking tabs
+ */
+function showStockSummary() {
+  
+  const stockSummary = document.getElementById("stockSummary");
+  if (stockSummary) {
+    stockSummary.hidden = false;
+  }
+}
+
+function showStockProfile() {
+  
+  const stockSummary = document.getElementById("stockSummary");
+  if (stockSummary) {
+    stockSummary.hidden = true;
+
+  }
 }
 
 /**
