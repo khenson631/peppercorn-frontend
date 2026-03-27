@@ -5,6 +5,14 @@ import { fetchHistory } from "../api/history.js";
 import { getMarketTimeDisplay, htmlToPlainText, isSafeUrl, formatNumber } from "../helpers/helpers.js";
 import { ensureAnonId, fetchWatchlistForAnon, addTickerToWatchlist, removeTickerFromWatchlist } from "../helpers/watchlistHelpers.js";
 
+const STOCK_TAB_PANEL_IDS = {
+  summarBtn: "stockSummary",
+  profileBtn: "stockProfilePanel",
+  newsBtn: "stockNewsPanel",
+  financialsBtn: "stockFinancialsPanel",
+  analysisBtn: "stockAnalysisPanel",
+};
+
 // Chart state (LightweightCharts is global from script tag)
 let chart, candleSeries;
 let currentRange = { range: "1y", interval: "1d" };
@@ -427,20 +435,23 @@ function formatStockNavBar() {
       if (!btn || !stockNavBar.contains(btn)) return;
 
       const id = btn.id;
-      if (id === "summarBtn") { 
-         /* show summary panel */ 
-         toggleStockSummaryHidden(false);
-         handleStockNavButtonActiveStates(id);
-         return; 
-      }
+
+      activateStockTab(id);
+
+      // if (id === "summarBtn") { 
+      //    /* show summary panel */ 
+      //    toggleStockSummaryHidden(false);
+      //    handleStockNavButtonActiveStates(id);
+      //    return; 
+      // }
       
-      if (id === "profileBtn") { 
-        /* show profile panel */ 
-        showStockProfile();
-        toggleStockSummaryHidden(true);
-        handleStockNavButtonActiveStates(id);
-        return; 
-      }
+      // if (id === "profileBtn") { 
+      //   /* show profile panel */ 
+      //   showStockProfile();
+      //   toggleStockSummaryHidden(true);
+      //   handleStockNavButtonActiveStates(id);
+      //   return; 
+      // }
       
         // …newsBtn, financialsBtn, analysisBtn    })
     });
@@ -460,7 +471,8 @@ function showStockNav() {
 
 function handleStockNavButtonActiveStates(activeBtnId) {
   const stockNavBar = document.getElementById("stockNavBar");
-  const buttons = stockNavBar.querySelectorAll('button');
+  if (!stockNavBar) return;
+  const buttons = stockNavBar.querySelectorAll("button");
 
   buttons.forEach((button) => {
     if (button.id === activeBtnId) {
@@ -473,22 +485,40 @@ function handleStockNavButtonActiveStates(activeBtnId) {
 }
 
 /**
- * Functions to show the different panels after clicking tabs
+ * Function to show the different panels after clicking tabs
  */
-//function showStockSummary() {
-function toggleStockSummaryHidden(value) {
-  const stockSummary = document.getElementById("stockSummary");
-  if (stockSummary) {
-    stockSummary.hidden = value;
-  }
+function activateStockTab(activeButtonID) {
+  const panelId = STOCK_TAB_PANEL_IDS[activeButtonID];
+  if (!panelId) return;
+
+  const quoteBody = document.getElementById("stockQuoteBody");
+  if (!quoteBody) return;
+
+  quoteBody.querySelectorAll(".stockPanel").forEach((panel) => {
+    panel.hidden = true;
+  });
+
+  const panelToShow = document.getElementById(panelId);
+  if (!panelToShow) return;
+
+  panelToShow.hidden = false;
+  handleStockNavButtonActiveStates(activeButtonID);
 }
 
-function showStockProfile() {
-  const stockProfile = document.getElementById("stockProfilePanel");
-  if (stockProfile) {
-    stockProfile.hidden = false;
-  }
-}
+//function showStockSummary() {
+// function toggleStockSummaryHidden(value) {
+//   const stockSummary = document.getElementById("stockSummary");
+//   if (stockSummary) {
+//     stockSummary.hidden = value;
+//   }
+// }
+
+// function showStockProfile() {
+//   const stockProfile = document.getElementById("stockProfilePanel");
+//   if (stockProfile) {
+//     stockProfile.hidden = false;
+//   }
+// }
 
 /**
  * Unmount the stock result view: hide container and stock nav bar.
@@ -533,12 +563,12 @@ export async function mount(container, ticker) {
     const data = await fetchScore(ticker);
     const profileData = await fetchProfile(ticker);
     formatStockNavBar();
-    handleStockNavButtonActiveStates('summarBtn'); //set the "Summary" button active
 
     if (data.label && data.confidence) {
       container.style.display = "block";
       container.innerHTML = getStockResultStaticHTML();
       fillStockResultData(data, profileData);
+      activateStockTab("summarBtn");
 
       setTimeout(async () => {
         try {
