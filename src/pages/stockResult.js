@@ -1,10 +1,18 @@
 // --- Stock result page: ticker profile, chart, nav bar ---
 import { fetchScore } from "../api/score.js";
 import { fetchProfile } from "../api/profile.js";
-import { fetchHistory } from "../api/history.js";
 import { getMarketTimeDisplay, htmlToPlainText, isSafeUrl, formatNumber, formatPhone } from "../helpers/helpers.js";
 import { ensureAnonId, fetchWatchlistForAnon, addTickerToWatchlist, removeTickerFromWatchlist } from "../helpers/watchlistHelpers.js";
 import { formatMarketCap } from "../helpers/stockResultHelpers.js";
+import {
+  getChartControlsHTML,
+  hideRangeLabels,
+  showRangeLabels,
+  setLastTicker,
+  loadChartForTicker,
+  bindChartControls,
+  disposeStockChart,
+} from "../components/chartControls.js";
 
 const STOCK_TAB_PANEL_IDS = {
   summarBtn: "stockSummary",
@@ -13,72 +21,6 @@ const STOCK_TAB_PANEL_IDS = {
   financialsBtn: "stockFinancialsPanel",
   analysisBtn: "stockAnalysisPanel",
 };
-
-// Chart state (LightweightCharts is global from script tag)
-let chart, candleSeries;
-let currentRange = { range: "1y", interval: "1d" };
-let lastTicker = "";
-let customInterval = null;
-
-const VALID_INTERVALS_FOR_RANGE = {
-  "1d": ["1m", "5m", "15m", "30m", "1h", "1d"],
-  "5d": ["1m", "5m", "15m", "30m", "1h", "1d"],
-  "1mo": ["5m", "15m", "30m", "1h", "1d", "1wk"],
-  "3mo": ["1h", "1d", "1wk"],
-  "6mo": ["1h", "1d", "1wk"],
-  "1y": ["1h", "1d", "1wk"],
-  "2y": ["1h", "1d", "1wk"],
-  "5y": ["1d", "1wk", "1mo"],
-  "10y": ["1d", "1wk", "1mo"],
-  max: ["1mo"],
-};
-
-function hideRangeLabels() {
-  document.querySelectorAll(".range-label").forEach((label) => {
-    label.style.display = "none";
-  });
-}
-
-function showRangeLabels() {
-  document.querySelectorAll(".range-label").forEach((label) => {
-    label.style.display = "inline-block";
-  });
-}
-
-function getRangeSelectorHTML() {
-  return `<div id="chartControls" style="display:flex;justify-content:center;align-items:center;gap:20px;margin:16px 0 0 0;flex-wrap:wrap;">
-    <div id="chartRangeSelector" style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
-      <span class="range-label" data-range="1d" data-interval="5m">1D</span>
-      <span class="range-label" data-range="5d" data-interval="15m">5D</span>
-      <span class="range-label" data-range="1mo" data-interval="1d">1M</span>
-      <span class="range-label" data-range="3mo" data-interval="1d">3M</span>
-      <span class="range-label" data-range="6mo" data-interval="1d">6M</span>
-      <span class="range-label" data-range="1y" data-interval="1d">1Y</span>
-      <span class="range-label" data-range="2y" data-interval="1d">2Y</span>
-      <span class="range-label" data-range="5y" data-interval="1wk">5Y</span>
-      <span class="range-label" data-range="10y" data-interval="1wk">10Y</span>
-      <span class="range-label" data-range="max" data-interval="1mo">MAX</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <label for="intervalDropdown" style="font-size:14px;font-weight:bold;">Interval:</label>
-      <select id="intervalDropdown" style="padding:6px 10px;border:1px solid #ccc;border-radius:4px;font-size:14px;background:#fff;cursor:pointer;">
-        <option value="">Auto</option>
-        <option value="1m">1 Minute</option>
-        <option value="5m">5 Minutes</option>
-        <option value="15m">15 Minutes</option>
-        <option value="30m">30 Minutes</option>
-        <option value="1h">1 Hour</option>
-        <option value="1d">1 Day</option>
-        <option value="1wk">1 Week</option>
-        <option value="1mo">1 Month</option>
-      </select>
-    </div>
-  </div>`;
-}
-
-function getChartContainerHTML() {
-  return `<div id="stockChart" style="width:100%;height:350px;margin:16px 0 0 0;display:none;"></div>`;
-}
 
 function getStockResultStaticHTML() {
   return `
@@ -92,8 +34,7 @@ function getStockResultStaticHTML() {
           <span id="p-marketTime" style="font-size:.44em"></span></div>
         </div>
         <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;" id="chartContainer">
-          ${getRangeSelectorHTML()}
-          ${getChartContainerHTML()}
+          ${getChartControlsHTML()}
         </div>
         <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
           <div style="flex: 1; min-width: 300px;">
@@ -341,66 +282,6 @@ function fillStockResultData(data, profileData) {
   }
 }
 
-function renderStockChart(ohlcData) {
-  const chartDiv = document.getElementById("stockChart");
-  if (!ohlcData.length) {
-    if (chartDiv) {
-      chartDiv.style.display = "none";
-      chartDiv.innerHTML = "";
-    }
-    return;
-  }
-  if (chart) {
-    chart.remove();
-  }
-  chartDiv.style.display = "block";
-  chartDiv.innerHTML = "";
-
-  chart = window.LightweightCharts.createChart(chartDiv, {
-    width: chartDiv.offsetWidth,
-    height: 350,
-    layout: { background: { color: "#fff" }, textColor: "#222" },
-    grid: { vertLines: { color: "#eee" }, horzLines: { color: "#eee" } },
-    timeScale: { timeVisible: true, secondsVisible: false },
-  });
-  candleSeries = chart.addSeries(window.LightweightCharts.AreaSeries);
-  const areaData = ohlcData
-    .filter((bar) => typeof bar.close === "number" && !isNaN(bar.close))
-    .map((bar) => ({ time: bar.time, value: bar.close }));
-  candleSeries.setData(areaData);
-  chart.timeScale().fitContent();
-}
-
-function setActiveRangeLabel(range, interval) {
-  document.querySelectorAll(".range-label").forEach((label) => {
-    if (label.dataset.range === range && label.dataset.interval === interval) {
-      label.classList.add("active");
-    } else {
-      label.classList.remove("active");
-    }
-  });
-  updateIntervalDropdownOptions(range);
-}
-
-function updateIntervalDropdownOptions(range) {
-  const dropdown = document.getElementById("intervalDropdown");
-  if (!dropdown) return;
-  const validIntervals = VALID_INTERVALS_FOR_RANGE[range] || [];
-  dropdown.querySelectorAll("option").forEach((option) => {
-    option.disabled = option.value !== "" && !validIntervals.includes(option.value);
-  });
-  if (customInterval && !validIntervals.includes(customInterval)) {
-    dropdown.value = "";
-    customInterval = null;
-  }
-}
-
-async function updateChartForTickerAndRange(ticker, range, interval) {
-  setActiveRangeLabel(range, interval);
-  const ohlcData = await fetchHistory(ticker, range, interval);
-  renderStockChart(ohlcData);
-}
-
 function formatStockNavBar() {
   try {
     let stockNavBar = document.getElementById("stockNavBar");
@@ -494,6 +375,7 @@ function activateStockTab(activeButtonID) {
  * @param {HTMLElement} container - The stock result container (e.g. #stockResult)
  */
 export function unmount(container) {
+  disposeStockChart();
   if (container) {
     container.style.display = "none";
     container.textContent = "";
@@ -520,7 +402,7 @@ export async function mount(container, ticker) {
     ${loadingMessage}
   </div>`;
 
-  lastTicker = ticker;
+  setLastTicker(ticker);
 
   if (!ticker) {
     container.textContent = "Please enter a ticker symbol.";
@@ -571,47 +453,9 @@ export async function mount(container, ticker) {
         }
       }, 0);
 
-      await updateChartForTickerAndRange(ticker, currentRange.range, currentRange.interval);
+      await loadChartForTicker(ticker);
       showRangeLabels();
-
-      document.getElementById("chartRangeSelector")?.addEventListener("click", async (e) => {
-        const label = e.target.closest(".range-label");
-        if (!label || !lastTicker) return;
-        let range = label.dataset.range;
-        let interval = label.dataset.interval;
-        if (customInterval) {
-          const validIntervals = VALID_INTERVALS_FOR_RANGE[range] || [];
-          if (validIntervals.includes(customInterval)) {
-            interval = customInterval;
-          } else {
-            customInterval = null;
-            document.getElementById("intervalDropdown").value = "";
-          }
-        }
-        currentRange = { range, interval };
-        await updateChartForTickerAndRange(lastTicker, range, interval);
-      });
-
-      document.getElementById("intervalDropdown")?.addEventListener("change", async (e) => {
-        const selectedInterval = e.target.value;
-        if (!selectedInterval) {
-          customInterval = null;
-          const defaultInterval = document.querySelector(`.range-label[data-range="${currentRange.range}"]`)?.dataset.interval;
-          currentRange = { range: currentRange.range, interval: defaultInterval || currentRange.interval };
-        } else {
-          const validIntervals = VALID_INTERVALS_FOR_RANGE[currentRange.range] || [];
-          if (validIntervals.includes(selectedInterval)) {
-            customInterval = selectedInterval;
-            currentRange = { range: currentRange.range, interval: selectedInterval };
-          } else {
-            e.target.value = "";
-            return;
-          }
-        }
-        if (lastTicker) {
-          await updateChartForTickerAndRange(lastTicker, currentRange.range, currentRange.interval);
-        }
-      });
+      bindChartControls();
     } else {
       container.textContent = data.error || "No result found.";
       hideRangeLabels();
