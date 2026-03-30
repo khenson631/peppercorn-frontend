@@ -98,6 +98,7 @@ function getStockResultStaticHTML() {
         <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
           <div style="flex: 1; min-width: 300px;">
             <div id="stockInfoContainer">
+              <h3 class="sectionHeader">Analyst Ratings</h3>
               <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
                 <strong id="p-label"></strong> <span id="p-confidence"></span>
               </div>
