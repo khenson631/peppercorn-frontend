@@ -39,6 +39,15 @@
         <!-- Chart and range selector will be injected dynamically -->
     </section>
   </div>
+  <!-- Resolve npm-style imports in type="module" scripts (must precede any module that imports them). Pinned to package-lock version. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "libphonenumber-js": "https://esm.sh/libphonenumber-js@1.12.41",
+      "libphonenumber-js/": "https://esm.sh/libphonenumber-js@1.12.41/"
+    }
+  }
+  </script>
   <script type="module" src="./main.js"></script>
 </body>
 </html> 

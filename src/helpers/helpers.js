@@ -78,3 +78,20 @@ export function getMarketTimeDisplay() {
   }
   return "At close 4:00:00 PM EST";
 }
+
+// Phone number formatter using libphonenumber-js
+import { parsePhoneNumber } from 'libphonenumber-js/min';
+
+export function formatPhone(phone, country = 'US') {
+  try {
+    const parsed = parsePhoneNumber(phone, country);
+
+    if (!parsed || !parsed.isValid()) {
+      return phone;
+    }
+
+    return parsed.formatNational();
+  } catch {
+    return phone;
+  }
+}

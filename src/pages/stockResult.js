@@ -2,8 +2,9 @@
 import { fetchScore } from "../api/score.js";
 import { fetchProfile } from "../api/profile.js";
 import { fetchHistory } from "../api/history.js";
-import { getMarketTimeDisplay, htmlToPlainText, isSafeUrl, formatNumber } from "../helpers/helpers.js";
+import { getMarketTimeDisplay, htmlToPlainText, isSafeUrl, formatNumber, formatPhone } from "../helpers/helpers.js";
 import { ensureAnonId, fetchWatchlistForAnon, addTickerToWatchlist, removeTickerFromWatchlist } from "../helpers/watchlistHelpers.js";
+import { formatMarketCap } from "../helpers/stockResultHelpers.js";
 
 const STOCK_TAB_PANEL_IDS = {
   summarBtn: "stockSummary",
@@ -629,13 +630,19 @@ function fillProfileDetailBody(profileData, data) {
   const n = (x) => (x != null && x !== "" ? x : "N/A");
   const lines = [
     ["Company", n(profileData?.name || data?.companyName)],
+    ["Ticker", profileData?.ticker],
     ["Industry", n(profileData?.finnhubIndustry)],
     ["Country", n(profileData?.country)],
-    ["Market cap", profileData?.marketCapitalization != null ? profileData.marketCapitalization.toLocaleString('en-us',{
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }) : "N/A"],
+    ["Market cap",
+      profileData?.marketCapitalization != null
+        ? formatMarketCap(profileData.marketCapitalization)
+        : "N/A"
+    ],
     ["Website", profileData?.weburl || "N/A"],
+    ["Phone", formatPhone(profileData?.phone)],
+    ["Exchange", profileData?.exchange],
+    ["IPO Date", profileData?.ipo],
+    ["Outstanding Shares", (profileData?.shareOutstanding * 1_000_000).toLocaleString('en-us')],
   ];
 
   root.replaceChildren();
@@ -645,3 +652,4 @@ function fillProfileDetailBody(profileData, data) {
     root.appendChild(row);
   });
 }
+

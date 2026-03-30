@@ -1,0 +1,12 @@
+{
+  "name": "peppercorn-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npx http-server ./src -p 8080 -o"
+  },
+  "dependencies": {
+    "libphonenumber-js": "^1.12.41"
+  }
+}
