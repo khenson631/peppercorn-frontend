@@ -29,11 +29,7 @@ await homePage.mount(stockResult);
 document.getElementById("watchlistTab")?.addEventListener("click", async () => {
   const tab = document.getElementById("watchlistTab");
   const isActive = tab?.classList.contains("active");
-  if (isActive) {
-    watchlistPage.unmount(watchlistContainer);
-    tab?.classList.remove("active");
-    return;
-  }
+
   stockResultPage.unmount(stockResult);
   tab?.classList.add("active");
   await watchlistPage.mount(watchlistContainer, {
